@@ -3,9 +3,11 @@ import { Button } from './components/ui/button';
 import { Card } from './components/ui/card';
 import { Badge } from './components/ui/badge';
 import { Alert, AlertDescription } from './components/ui/alert';
-import { Volume2, Clock, Check, X, RotateCcw, Play, Settings, AlertTriangle } from 'lucide-react';
+import { Volume2, Clock, Check, X, RotateCcw, Play, Settings, AlertTriangle, User, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DataManager, SessionData } from './components/DataManager';
+import { useAuth } from './src/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 type GamePhase = 'setup' | 'instructions' | 'listen' | 'delay' | 'selection' | 'feedback' | 'results';
 type UserRole = 'operator' | 'patient';
@@ -29,6 +31,9 @@ const GAME_SOUNDS: Sound[] = [
 ];
 
 export default function App() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  
   const [gamePhase, setGamePhase] = useState<GamePhase>('setup');
   const [userRole, setUserRole] = useState<UserRole>('operator');
   const [targetSounds, setTargetSounds] = useState<Sound[]>([]);
@@ -43,6 +48,11 @@ export default function App() {
   const [showAlert, setShowAlert] = useState(false);
   
   const dataManager = useRef(DataManager.getInstance());
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   // Initialize audio context
   useEffect(() => {
@@ -427,12 +437,29 @@ export default function App() {
               {userRole === 'operator' ? 'Operator View' : `Session ${sessionNumber}`}
             </p>
           </div>
-          {userRole === 'patient' && (
-            <Badge variant="secondary" className="px-3 py-1">
-              <Clock className="w-3 h-3 mr-1" />
-              {Math.round(reactionTime / 1000)}s
-            </Badge>
-          )}
+          <div className="flex items-center gap-3">
+            {userRole === 'patient' && (
+              <Badge variant="secondary" className="px-3 py-1">
+                <Clock className="w-3 h-3 mr-1" />
+                {Math.round(reactionTime / 1000)}s
+              </Badge>
+            )}
+            {user && (
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-100 rounded-full">
+                  <User className="w-4 h-4 text-purple-600" />
+                  <span className="text-sm font-medium text-purple-900">{user.username}</span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                  title="Logout"
+                >
+                  <LogOut className="w-4 h-4 text-gray-600" />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
