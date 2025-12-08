@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from './components/ui/alert';
 import { Volume2, Clock, Check, X, Play, Settings, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DataManager, SessionData } from './components/DataManager';
+import { LandingPage } from './components/LandingPage';
 
 type GamePhase = 'setup' | 'instructions' | 'listen' | 'delay' | 'selection' | 'feedback' | 'results';
 type UserRole = 'operator' | 'patient';
@@ -29,6 +30,7 @@ const GAME_SOUNDS: Sound[] = [
 ];
 
 export default function App() {
+  const [showLanding, setShowLanding] = useState(true);
   const [gamePhase, setGamePhase] = useState<GamePhase>('setup');
   const [userRole, setUserRole] = useState<UserRole>('operator');
   const [targetSounds, setTargetSounds] = useState<Sound[]>([]);
@@ -308,11 +310,20 @@ export default function App() {
     setShowAlert(false);
   };
 
+  const handleStartGame = () => {
+    setShowLanding(false);
+  };
+
   const correctIds = new Set(targetSounds.map(s => s.id));
   const isCorrect = selectedSounds.size === correctIds.size && 
                    [...selectedSounds].every(id => correctIds.has(id));
 
   const recentSessions = dataManager.current.getRecentSessions(5);
+
+  // Show landing page first
+  if (showLanding) {
+    return <LandingPage onStart={handleStartGame} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex flex-col">
