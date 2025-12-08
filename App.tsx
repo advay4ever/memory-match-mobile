@@ -1,13 +1,11 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Button } from './components/ui/button';
 import { Card } from './components/ui/card';
 import { Badge } from './components/ui/badge';
 import { Alert, AlertDescription } from './components/ui/alert';
-import { Volume2, Clock, Check, X, RotateCcw, Play, Settings, AlertTriangle, User, LogOut } from 'lucide-react';
+import { Volume2, Clock, Check, X, Play, Settings, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DataManager, SessionData } from './components/DataManager';
-import { useAuth } from './src/hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
 
 type GamePhase = 'setup' | 'instructions' | 'listen' | 'delay' | 'selection' | 'feedback' | 'results';
 type UserRole = 'operator' | 'patient';
@@ -31,9 +29,6 @@ const GAME_SOUNDS: Sound[] = [
 ];
 
 export default function App() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  
   const [gamePhase, setGamePhase] = useState<GamePhase>('setup');
   const [userRole, setUserRole] = useState<UserRole>('operator');
   const [targetSounds, setTargetSounds] = useState<Sound[]>([]);
@@ -49,11 +44,6 @@ export default function App() {
   
   const dataManager = useRef(DataManager.getInstance());
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   // Initialize audio context
   useEffect(() => {
     const initAudio = () => {
@@ -67,242 +57,140 @@ export default function App() {
     initAudio();
   }, []);
 
-  const createDogBark = useCallback((ctx: AudioContext, startTime: number) => {
-    // Dog bark: Low growl + sharp bark
-    const duration = 0.6;
-    
-    // Low growl component
-    const growlOsc = ctx.createOscillator();
-    const growlGain = ctx.createGain();
-    const growlFilter = ctx.createBiquadFilter();
-    
-    growlOsc.type = 'sawtooth';
-    growlOsc.frequency.setValueAtTime(80, startTime);
-    growlOsc.frequency.exponentialRampToValueAtTime(120, startTime + 0.2);
-    
-    growlFilter.type = 'lowpass';
-    growlFilter.frequency.setValueAtTime(400, startTime);
-    
-    growlGain.gain.setValueAtTime(0.3, startTime);
-    growlGain.gain.exponentialRampToValueAtTime(0.1, startTime + 0.3);
-    growlGain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
-    
-    growlOsc.connect(growlFilter).connect(growlGain).connect(ctx.destination);
-    
-    // Sharp bark component
-    const barkOsc = ctx.createOscillator();
-    const barkGain = ctx.createGain();
-    
-    barkOsc.type = 'square';
-    barkOsc.frequency.setValueAtTime(200, startTime + 0.3);
-    barkOsc.frequency.exponentialRampToValueAtTime(300, startTime + 0.35);
-    barkOsc.frequency.exponentialRampToValueAtTime(150, startTime + 0.5);
-    
-    barkGain.gain.setValueAtTime(0, startTime + 0.3);
-    barkGain.gain.linearRampToValueAtTime(0.4, startTime + 0.32);
-    barkGain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
-    
-    barkOsc.connect(barkGain).connect(ctx.destination);
-    
-    growlOsc.start(startTime);
-    growlOsc.stop(startTime + duration);
-    barkOsc.start(startTime + 0.3);
-    barkOsc.stop(startTime + duration);
+  // Preload dog bark audio
+  const dogBarkAudio = useMemo(() => {
+    const audio = new Audio('/sounds/dog-bark-419014.mp3');
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    return audio;
   }, []);
 
-  const createBellRing = useCallback((ctx: AudioContext, startTime: number) => {
-    // Bell: Harmonic frequencies with decay
-    const duration = 1.2;
-    const fundamentalFreq = 523; // C5
-    const harmonics = [1, 2, 3, 4, 5];
-    
-    harmonics.forEach((harmonic, index) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(fundamentalFreq * harmonic, startTime);
-      
-      const amplitude = 0.3 / (harmonic * harmonic); // Decay amplitude with harmonics
-      gain.gain.setValueAtTime(amplitude, startTime);
-      gain.gain.exponentialRampToValueAtTime(amplitude * 0.1, startTime + 0.3);
-      gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-      
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(startTime);
-      osc.stop(startTime + duration);
-    });
+  // Preload car horn audio
+  const carHornAudio = useMemo(() => {
+    const audio = new Audio('/sounds/car-horn-352443.mp3');
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    return audio;
   }, []);
 
-  const createWaterDrop = useCallback((ctx: AudioContext, startTime: number) => {
-    // Water drop: Filtered noise burst + resonant tone
-    const duration = 0.4;
-    
-    // Create noise
-    const bufferSize = ctx.sampleRate * duration;
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const output = buffer.getChannelData(0);
-    
-    for (let i = 0; i < bufferSize; i++) {
-      output[i] = Math.random() * 2 - 1;
+  // Preload bird chirping audio
+  const birdChirpAudio = useMemo(() => {
+    const audio = new Audio('/sounds/bird-chirping-428659.mp3');
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    return audio;
+  }, []);
+
+  // Preload bell ring audio
+  const bellRingAudio = useMemo(() => {
+    const audio = new Audio('/sounds/bell-ring-199839.mp3');
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    return audio;
+  }, []);
+
+  // Preload water droplet audio
+  const waterDropAudio = useMemo(() => {
+    const audio = new Audio('/sounds/water-droplet-165637.mp3');
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    return audio;
+  }, []);
+
+  const phoneRingAudio = useMemo(() => {
+    const audio = new Audio('/sounds/phone-ringing-382734.mp3');
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    return audio;
+  }, []);
+
+  const createDogBark = useCallback(() => {
+    // Play the real dog bark MP3 file
+    try {
+      // Clone the audio to allow overlapping plays
+      const audio = dogBarkAudio.cloneNode(true) as HTMLAudioElement;
+      audio.play().catch(err => console.error('Error playing dog bark:', err));
+    } catch (err) {
+      console.error('Error creating dog bark audio:', err);
     }
-    
-    const noise = ctx.createBufferSource();
-    noise.buffer = buffer;
-    
-    const noiseFilter = ctx.createBiquadFilter();
-    noiseFilter.type = 'bandpass';
-    noiseFilter.frequency.setValueAtTime(800, startTime);
-    noiseFilter.Q.setValueAtTime(10, startTime);
-    
-    const noiseGain = ctx.createGain();
-    noiseGain.gain.setValueAtTime(0.2, startTime);
-    noiseGain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.1);
-    
-    // Resonant tone
-    const tone = ctx.createOscillator();
-    const toneGain = ctx.createGain();
-    
-    tone.type = 'sine';
-    tone.frequency.setValueAtTime(400, startTime);
-    tone.frequency.exponentialRampToValueAtTime(200, startTime + duration);
-    
-    toneGain.gain.setValueAtTime(0.3, startTime + 0.05);
-    toneGain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-    
-    noise.connect(noiseFilter).connect(noiseGain).connect(ctx.destination);
-    tone.connect(toneGain).connect(ctx.destination);
-    
-    noise.start(startTime);
-    tone.start(startTime + 0.05);
-    tone.stop(startTime + duration);
-  }, []);
+  }, [dogBarkAudio]);
 
-  const createBirdChirp = useCallback((ctx: AudioContext, startTime: number) => {
-    // Bird chirp: Modulated high frequency
-    const duration = 0.5;
-    
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    const modulator = ctx.createOscillator();
-    const modGain = ctx.createGain();
-    
-    // Main oscillator
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(2000, startTime);
-    osc.frequency.exponentialRampToValueAtTime(3000, startTime + 0.1);
-    osc.frequency.exponentialRampToValueAtTime(2500, startTime + 0.3);
-    osc.frequency.exponentialRampToValueAtTime(1800, startTime + duration);
-    
-    // Frequency modulation for trill effect
-    modulator.type = 'sine';
-    modulator.frequency.setValueAtTime(15, startTime);
-    modGain.gain.setValueAtTime(100, startTime);
-    
-    gain.gain.setValueAtTime(0.25, startTime);
-    gain.gain.exponentialRampToValueAtTime(0.3, startTime + 0.1);
-    gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-    
-    modulator.connect(modGain).connect(osc.frequency);
-    osc.connect(gain).connect(ctx.destination);
-    
-    modulator.start(startTime);
-    osc.start(startTime);
-    modulator.stop(startTime + duration);
-    osc.stop(startTime + duration);
-  }, []);
-
-  const createCarHorn = useCallback((ctx: AudioContext, startTime: number) => {
-    // Car horn: Dual tone beep
-    const duration = 0.7;
-    
-    // Lower tone
-    const osc1 = ctx.createOscillator();
-    const gain1 = ctx.createGain();
-    
-    osc1.type = 'square';
-    osc1.frequency.setValueAtTime(220, startTime);
-    
-    gain1.gain.setValueAtTime(0.2, startTime);
-    gain1.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-    
-    // Higher tone
-    const osc2 = ctx.createOscillator();
-    const gain2 = ctx.createGain();
-    
-    osc2.type = 'square';
-    osc2.frequency.setValueAtTime(330, startTime);
-    
-    gain2.gain.setValueAtTime(0.2, startTime);
-    gain2.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-    
-    osc1.connect(gain1).connect(ctx.destination);
-    osc2.connect(gain2).connect(ctx.destination);
-    
-    osc1.start(startTime);
-    osc2.start(startTime);
-    osc1.stop(startTime + duration);
-    osc2.stop(startTime + duration);
-  }, []);
-
-  const createPhoneRing = useCallback((ctx: AudioContext, startTime: number) => {
-    // Phone ring: Classic ring pattern
-    const ringDuration = 0.3;
-    const pauseDuration = 0.2;
-    const totalDuration = 1.0;
-    
-    for (let i = 0; i < 2; i++) {
-      const ringStart = startTime + i * (ringDuration + pauseDuration);
-      
-      // Two-tone ring
-      const osc1 = ctx.createOscillator();
-      const osc2 = ctx.createOscillator();
-      const gain1 = ctx.createGain();
-      const gain2 = ctx.createGain();
-      
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(440, ringStart);
-      osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(480, ringStart);
-      
-      gain1.gain.setValueAtTime(0.15, ringStart);
-      gain1.gain.exponentialRampToValueAtTime(0.001, ringStart + ringDuration);
-      gain2.gain.setValueAtTime(0.15, ringStart);
-      gain2.gain.exponentialRampToValueAtTime(0.001, ringStart + ringDuration);
-      
-      osc1.connect(gain1).connect(ctx.destination);
-      osc2.connect(gain2).connect(ctx.destination);
-      
-      osc1.start(ringStart);
-      osc2.start(ringStart);
-      osc1.stop(ringStart + ringDuration);
-      osc2.stop(ringStart + ringDuration);
+  const createBellRing = useCallback(() => {
+    // Play the real bell ring MP3 file
+    try {
+      // Clone the audio to allow overlapping plays
+      const audio = bellRingAudio.cloneNode(true) as HTMLAudioElement;
+      audio.play().catch(err => console.error('Error playing bell ring:', err));
+    } catch (err) {
+      console.error('Error creating bell ring audio:', err);
     }
-  }, []);
+  }, [bellRingAudio]);
+
+  const createWaterDrop = useCallback(() => {
+    // Play the real water droplet MP3 file
+    try {
+      // Clone the audio to allow overlapping plays
+      const audio = waterDropAudio.cloneNode(true) as HTMLAudioElement;
+      audio.play().catch(err => console.error('Error playing water drop:', err));
+    } catch (err) {
+      console.error('Error creating water drop audio:', err);
+    }
+  }, [waterDropAudio]);
+
+  const createBirdChirp = useCallback(() => {
+    // Play the real bird chirping MP3 file
+    try {
+      // Clone the audio to allow overlapping plays
+      const audio = birdChirpAudio.cloneNode(true) as HTMLAudioElement;
+      audio.play().catch(err => console.error('Error playing bird chirp:', err));
+    } catch (err) {
+      console.error('Error creating bird chirp audio:', err);
+    }
+  }, [birdChirpAudio]);
+
+  const createCarHorn = useCallback(() => {
+    // Play the real car horn MP3 file
+    try {
+      // Clone the audio to allow overlapping plays
+      const audio = carHornAudio.cloneNode(true) as HTMLAudioElement;
+      audio.play().catch(err => console.error('Error playing car horn:', err));
+    } catch (err) {
+      console.error('Error creating car horn audio:', err);
+    }
+  }, [carHornAudio]);
+
+  const createPhoneRing = useCallback(() => {
+    // Play the real phone ring MP3 file
+    try {
+      // Clone the audio to allow overlapping plays
+      const audio = phoneRingAudio.cloneNode(true) as HTMLAudioElement;
+      audio.play().catch(err => console.error('Error playing phone ring:', err));
+    } catch (err) {
+      console.error('Error creating phone ring audio:', err);
+    }
+  }, [phoneRingAudio]);
 
   const playSound = useCallback((soundType: Sound['soundType']) => {
     if (!audioContext) return;
 
-    const startTime = audioContext.currentTime + 0.1;
-
     switch (soundType) {
       case 'dog':
-        createDogBark(audioContext, startTime);
+        createDogBark();
         break;
       case 'bell':
-        createBellRing(audioContext, startTime);
+        createBellRing();
         break;
       case 'water':
-        createWaterDrop(audioContext, startTime);
+        createWaterDrop();
         break;
       case 'bird':
-        createBirdChirp(audioContext, startTime);
+        createBirdChirp();
         break;
       case 'horn':
-        createCarHorn(audioContext, startTime);
+        createCarHorn();
         break;
       case 'phone':
-        createPhoneRing(audioContext, startTime);
+        createPhoneRing();
         break;
     }
   }, [audioContext, createDogBark, createBellRing, createWaterDrop, createBirdChirp, createCarHorn, createPhoneRing]);
@@ -443,21 +331,6 @@ export default function App() {
                 <Clock className="w-3 h-3 mr-1" />
                 {Math.round(reactionTime / 1000)}s
               </Badge>
-            )}
-            {user && (
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-100 rounded-full">
-                  <User className="w-4 h-4 text-purple-600" />
-                  <span className="text-sm font-medium text-purple-900">{user.username}</span>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                  title="Logout"
-                >
-                  <LogOut className="w-4 h-4 text-gray-600" />
-                </button>
-              </div>
             )}
           </div>
         </div>
