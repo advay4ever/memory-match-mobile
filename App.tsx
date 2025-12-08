@@ -36,7 +36,7 @@ export default function App() {
   const [currentSoundIndex, setCurrentSoundIndex] = useState(0);
   const [sessionNumber, setSessionNumber] = useState(1);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
-  const [delayCountdown, setDelayCountdown] = useState(6); // 6 seconds delay
+  const [delayCountdown, setDelayCountdown] = useState(8); // 8 seconds delay
   const [gameStartTime, setGameStartTime] = useState<number>(0);
   const [selectionStartTime, setSelectionStartTime] = useState<number>(0);
   const [reactionTime, setReactionTime] = useState<number>(0);
@@ -215,7 +215,7 @@ export default function App() {
   const playSequence = useCallback(async () => {
     if (gamePhase !== 'listen' || currentSoundIndex >= targetSounds.length) {
       setGamePhase('delay');
-      setDelayCountdown(6); // Reset to 6 seconds
+      setDelayCountdown(8); // Reset to 8 seconds
       return;
     }
 
