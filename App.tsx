@@ -326,19 +326,19 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-400 to-orange-400 flex flex-col">
       {/* Header */}
-      <div className="p-4 bg-white/90 backdrop-blur-sm border-b border-gray-200">
+      <div className="p-4 bg-white/95 backdrop-blur-md border-b-4 border-purple-300 shadow-lg">
         <div className="flex justify-between items-center max-w-md mx-auto">
           <div>
-            <h1 className="text-lg text-gray-800">Memory Assessment</h1>
-            <p className="text-sm text-gray-600">
-              {userRole === 'operator' ? 'Operator View' : `Session ${sessionNumber}`}
+            <h1 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">Memory Match! 🎮</h1>
+            <p className="text-sm text-gray-700 font-medium">
+              {userRole === 'operator' ? '🎯 Operator View' : `🎪 Session ${sessionNumber}`}
             </p>
           </div>
           <div className="flex items-center gap-3">
             {userRole === 'patient' && (
-              <Badge variant="secondary" className="px-3 py-1">
+              <Badge variant="secondary" className="px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0">
                 <Clock className="w-3 h-3 mr-1" />
                 {Math.round(reactionTime / 1000)}s
               </Badge>
@@ -349,10 +349,10 @@ export default function App() {
 
       {/* Alert Banner */}
       {showAlert && (
-        <Alert className="mx-4 mt-4 border-orange-200 bg-orange-50">
-          <AlertTriangle className="h-4 w-4 text-orange-600" />
-          <AlertDescription className="text-orange-800">
-            Performance alert: Consider consulting with healthcare provider.
+        <Alert className="mx-4 mt-4 border-orange-300 bg-gradient-to-r from-orange-100 to-yellow-100 shadow-lg">
+          <AlertTriangle className="h-5 w-5 text-orange-600" />
+          <AlertDescription className="text-orange-900 font-medium">
+            📊 Performance alert: Consider consulting with healthcare provider.
           </AlertDescription>
         </Alert>
       )}
@@ -369,22 +369,22 @@ export default function App() {
                 exit={{ opacity: 0, y: -20 }}
                 className="space-y-6"
               >
-                <Card className="p-8 bg-white/95 backdrop-blur-sm shadow-lg">
-                  <h2 className="text-2xl mb-4 text-center text-gray-800">
-                    Cognitive Assessment
+                <Card className="p-8 bg-white/95 backdrop-blur-sm shadow-2xl border-4 border-purple-300 rounded-3xl">
+                  <h2 className="text-3xl mb-4 text-center font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+                    🧠 Cognitive Assessment
                   </h2>
-                  <p className="text-gray-600 mb-6 text-center">
-                    Memory Match Test for Cognitive Health
+                  <p className="text-gray-700 mb-6 text-center font-medium text-lg">
+                    Memory Match Test for Cognitive Health ✨
                   </p>
                   
                   {recentSessions.length > 0 && (
-                    <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                      <h3 className="text-sm mb-2 text-gray-700">Recent Sessions:</h3>
-                      <div className="space-y-1">
+                    <div className="mb-6 p-5 bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl border-2 border-purple-200">
+                      <h3 className="text-sm mb-3 text-gray-800 font-bold">📈 Recent Sessions:</h3>
+                      <div className="space-y-2">
                         {recentSessions.slice(-3).map((session, index) => (
-                          <div key={session.id} className="flex justify-between text-xs text-gray-600">
-                            <span>Session {recentSessions.length - index}</span>
-                            <span className={session.accuracy >= 60 ? 'text-green-600' : 'text-red-600'}>
+                          <div key={session.id} className="flex justify-between text-sm text-gray-700 bg-white/60 p-2 rounded-lg">
+                            <span className="font-medium">🎯 Session {recentSessions.length - index}</span>
+                            <span className={session.accuracy >= 60 ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>
                               {session.accuracy.toFixed(0)}% • {(session.reactionTime / 1000).toFixed(1)}s
                             </span>
                           </div>
@@ -394,16 +394,16 @@ export default function App() {
                   )}
                   
                   <div className="space-y-4">
-                    <p className="text-sm text-gray-500 text-center">
-                      Operator: Start the test when patient is ready
+                    <p className="text-sm text-gray-600 text-center font-medium">
+                      👨‍⚕️ Operator: Start the test when patient is ready
                     </p>
                     <Button 
                       onClick={startGame}
                       size="lg"
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                      className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 hover:from-purple-700 hover:via-pink-700 hover:to-orange-600 text-white font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all"
                     >
-                      <Play className="w-5 h-5 mr-2" />
-                      Start Memory Test
+                      <Play className="w-6 h-6 mr-2" />
+                      🚀 Start Memory Test
                     </Button>
                   </div>
                 </Card>
@@ -418,39 +418,41 @@ export default function App() {
                 exit={{ opacity: 0, scale: 0.9 }}
                 className="space-y-6"
               >
-                <Card className="p-8 bg-white/95 backdrop-blur-sm shadow-lg">
-                  <h2 className="text-xl mb-6 text-center text-gray-800">Instructions</h2>
+                <Card className="p-8 bg-white/95 backdrop-blur-sm shadow-2xl border-4 border-green-300 rounded-3xl">
+                  <h2 className="text-2xl mb-6 text-center font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-blue-600">
+                    📋 Instructions
+                  </h2>
                   
                   <div className="space-y-4 mb-8">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm text-blue-600">1</span>
+                    <div className="flex items-center space-x-4 bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-xl border-2 border-blue-200">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center shadow-lg">
+                        <span className="text-lg text-white font-bold">1</span>
                       </div>
-                      <p className="text-gray-700">Listen to 3 different sounds</p>
+                      <p className="text-gray-800 font-medium">🎵 Listen to 3 different sounds</p>
                     </div>
                     
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm text-blue-600">2</span>
+                    <div className="flex items-center space-x-4 bg-gradient-to-r from-pink-50 to-orange-50 p-4 rounded-xl border-2 border-pink-200">
+                      <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+                        <span className="text-lg text-white font-bold">2</span>
                       </div>
-                      <p className="text-gray-700">Wait for the selection screen</p>
+                      <p className="text-gray-800 font-medium">⏳ Wait for the selection screen</p>
                     </div>
                     
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm text-blue-600">3</span>
+                    <div className="flex items-center space-x-4 bg-gradient-to-r from-green-50 to-teal-50 p-4 rounded-xl border-2 border-green-200">
+                      <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-teal-500 rounded-full flex items-center justify-center shadow-lg">
+                        <span className="text-lg text-white font-bold">3</span>
                       </div>
-                      <p className="text-gray-700">Tap the 3 sounds you heard</p>
+                      <p className="text-gray-800 font-medium">👆 Tap the 3 sounds you heard</p>
                     </div>
                   </div>
                   
                   <Button 
                     onClick={startListening}
                     size="lg"
-                    className="w-full bg-green-600 hover:bg-green-700 text-white"
+                    className="w-full bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all"
                   >
-                    <Volume2 className="w-5 h-5 mr-2" />
-                    Ready to Listen
+                    <Volume2 className="w-6 h-6 mr-2" />
+                    🎧 Ready to Listen!
                   </Button>
                 </Card>
               </motion.div>
@@ -464,33 +466,35 @@ export default function App() {
                 exit={{ opacity: 0, scale: 0.9 }}
                 className="space-y-6"
               >
-                <Card className="p-8 bg-white/95 backdrop-blur-sm shadow-lg">
+                <Card className="p-8 bg-white/95 backdrop-blur-sm shadow-2xl border-4 border-blue-300 rounded-3xl">
                   <motion.div
                     animate={{ scale: [1, 1.1, 1] }}
                     transition={{ duration: 1, repeat: Infinity }}
                     className="text-center mb-6"
                   >
-                    <Volume2 className="w-16 h-16 mx-auto text-blue-600" />
+                    <div className="w-20 h-20 mx-auto bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center shadow-2xl">
+                      <Volume2 className="w-10 h-10 text-white" />
+                    </div>
                   </motion.div>
                   
-                  <h2 className="text-xl mb-6 text-center text-gray-800">
-                    Listen carefully...
+                  <h2 className="text-2xl mb-6 text-center font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                    🎵 Listen carefully...
                   </h2>
                   
                   <div className="flex justify-center space-x-4 mb-6">
                     {targetSounds.map((sound, index) => (
                       <motion.div
                         key={sound.id}
-                        className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl border-4 ${
+                        className={`w-20 h-20 rounded-2xl flex items-center justify-center text-3xl border-4 shadow-xl ${
                           index === currentSoundIndex 
-                            ? 'bg-blue-500 border-blue-400 text-white shadow-lg' 
+                            ? 'bg-gradient-to-br from-blue-500 to-purple-500 border-blue-400 text-white' 
                             : index < currentSoundIndex 
-                              ? 'bg-green-500 border-green-400 text-white' 
-                              : 'bg-gray-100 border-gray-300 text-gray-400'
+                              ? 'bg-gradient-to-br from-green-500 to-teal-500 border-green-400 text-white' 
+                              : 'bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300 text-gray-400'
                         }`}
                         animate={index === currentSoundIndex ? { 
                           scale: [1, 1.3, 1],
-                          rotate: [0, 5, -5, 0]
+                          rotate: [0, 10, -10, 0]
                         } : {}}
                         transition={{ duration: 0.8 }}
                       >
@@ -499,8 +503,8 @@ export default function App() {
                     ))}
                   </div>
                   
-                  <p className="text-center text-gray-600">
-                    Sound {Math.min(currentSoundIndex + 1, 3)} of 3
+                  <p className="text-center text-gray-700 font-bold text-lg">
+                    🔊 Sound {Math.min(currentSoundIndex + 1, 3)} of 3
                   </p>
                 </Card>
               </motion.div>
@@ -514,19 +518,21 @@ export default function App() {
                 exit={{ opacity: 0, scale: 0.9 }}
                 className="space-y-6"
               >
-                <Card className="p-8 bg-white/95 backdrop-blur-sm shadow-lg text-center">
-                  <h2 className="text-xl mb-6 text-gray-800">Please wait...</h2>
+                <Card className="p-8 bg-white/95 backdrop-blur-sm shadow-2xl text-center border-4 border-yellow-300 rounded-3xl">
+                  <h2 className="text-2xl mb-6 font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-600 to-orange-600">
+                    ⏰ Please wait...
+                  </h2>
                   
                   <motion.div
                     key={delayCountdown}
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="text-6xl mb-6 text-blue-600"
+                    className="text-8xl mb-6 font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600"
                   >
                     {delayCountdown}
                   </motion.div>
                   
-                  <p className="text-gray-600">Get ready to select the sounds</p>
+                  <p className="text-gray-700 font-medium text-lg">🎯 Get ready to select the sounds!</p>
                 </Card>
               </motion.div>
             )}
@@ -539,12 +545,12 @@ export default function App() {
                 exit={{ opacity: 0, y: -20 }}
                 className="space-y-6"
               >
-                <Card className="p-6 bg-white/95 backdrop-blur-sm shadow-lg">
-                  <h2 className="text-lg mb-2 text-center text-gray-800">
-                    Which 3 sounds did you hear?
+                <Card className="p-6 bg-white/95 backdrop-blur-sm shadow-2xl border-4 border-pink-300 rounded-3xl">
+                  <h2 className="text-xl mb-2 text-center font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-purple-600">
+                    🎯 Which 3 sounds did you hear?
                   </h2>
-                  <p className="text-sm text-gray-600 text-center mb-6">
-                    Tap exactly 3 sounds • Selected: {selectedSounds.size}/3
+                  <p className="text-sm text-gray-700 text-center mb-6 font-medium">
+                    👆 Tap exactly 3 sounds • Selected: <span className="text-pink-600 font-bold">{selectedSounds.size}/3</span>
                   </p>
                   
                   <div className="grid grid-cols-2 gap-4 mb-6">
@@ -553,18 +559,18 @@ export default function App() {
                         key={sound.id}
                         onClick={() => handleSoundSelection(sound.id)}
                         disabled={!selectedSounds.has(sound.id) && selectedSounds.size >= 3}
-                        className={`aspect-square rounded-2xl flex flex-col items-center justify-center p-4 border-3 transition-all ${
+                        className={`aspect-square rounded-3xl flex flex-col items-center justify-center p-4 border-4 transition-all shadow-lg ${
                           selectedSounds.has(sound.id)
-                            ? 'bg-blue-500 border-blue-400 text-white shadow-lg'
+                            ? 'bg-gradient-to-br from-pink-500 to-purple-500 border-pink-400 text-white shadow-2xl scale-105'
                             : selectedSounds.size >= 3
                               ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
-                              : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400'
+                              : 'bg-gradient-to-br from-white to-gray-50 border-gray-300 text-gray-700 hover:border-pink-400 hover:shadow-xl'
                         }`}
-                        whileTap={{ scale: 0.95 }}
-                        whileHover={selectedSounds.has(sound.id) || selectedSounds.size < 3 ? { scale: 1.05 } : {}}
+                        whileTap={{ scale: 0.9 }}
+                        whileHover={selectedSounds.has(sound.id) || selectedSounds.size < 3 ? { scale: 1.1 } : {}}
                       >
-                        <span className="text-3xl mb-2">{sound.icon}</span>
-                        <span className="text-xs text-center">{sound.name}</span>
+                        <span className="text-4xl mb-2">{sound.icon}</span>
+                        <span className="text-xs text-center font-bold">{sound.name}</span>
                       </motion.button>
                     ))}
                   </div>
@@ -572,10 +578,10 @@ export default function App() {
                   <Button 
                     onClick={submitAnswer}
                     disabled={selectedSounds.size !== 3}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-300"
+                    className="w-full bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white disabled:bg-gray-300 font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all"
                     size="lg"
                   >
-                    Submit Answer ({selectedSounds.size}/3)
+                    ✅ Submit Answer ({selectedSounds.size}/3)
                   </Button>
                 </Card>
               </motion.div>
@@ -589,43 +595,49 @@ export default function App() {
                 exit={{ opacity: 0, scale: 0.9 }}
                 className="space-y-6"
               >
-                <Card className="p-8 bg-white/95 backdrop-blur-sm shadow-lg text-center">
+                <Card className="p-8 bg-white/95 backdrop-blur-sm shadow-2xl text-center border-4 border-green-300 rounded-3xl">
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.2, type: "spring" }}
                   >
                     {isCorrect ? (
-                      <Check className="w-20 h-20 mx-auto mb-4 text-green-600" />
+                      <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-green-500 to-teal-500 rounded-full flex items-center justify-center shadow-2xl">
+                        <Check className="w-16 h-16 text-white" />
+                      </div>
                     ) : (
-                      <X className="w-20 h-20 mx-auto mb-4 text-red-500" />
+                      <div className="w-24 h-24 mx-auto mb-4 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center shadow-2xl">
+                        <X className="w-16 h-16 text-white" />
+                      </div>
                     )}
                   </motion.div>
                   
-                  <h2 className="text-2xl mb-4 text-gray-800">
-                    {isCorrect ? 'Excellent!' : 'Good Try!'}
+                  <h2 className="text-3xl mb-4 font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+                    {isCorrect ? '🎉 Excellent!' : '💪 Good Try!'}
                   </h2>
                   
                   <div className="space-y-3 mb-6">
                     <div className="flex justify-center items-center space-x-4">
-                      <Badge variant={isCorrect ? "default" : "secondary"} className="px-4 py-2">
-                        {isCorrect ? '100%' : `${(calculatePartialAccuracy() * 100).toFixed(0)}%`} Accuracy
+                      <Badge variant={isCorrect ? "default" : "secondary"} className={`px-6 py-3 text-lg font-bold ${isCorrect ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white' : 'bg-gradient-to-r from-orange-400 to-red-400 text-white'}`}>
+                        {isCorrect ? '✨ 100%' : `📊 ${(calculatePartialAccuracy() * 100).toFixed(0)}%`} Accuracy
                       </Badge>
-                      <Badge variant="outline" className="px-4 py-2">
-                        {(reactionTime / 1000).toFixed(1)}s Response
+                      <Badge variant="outline" className="px-6 py-3 border-2 border-purple-400 text-purple-700 font-bold text-lg">
+                        ⏱️ {(reactionTime / 1000).toFixed(1)}s
                       </Badge>
                     </div>
                     
-                    <div className="text-sm text-gray-600">
-                      <p className="mb-2">
-                        Correct: {targetSounds.map(s => s.icon).join(' ')} 
+                    <div className="text-sm text-gray-700 bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-xl border-2 border-purple-200">
+                      <p className="mb-2 font-bold text-base">
+                        ✅ Correct: <span className="text-2xl">{targetSounds.map(s => s.icon).join(' ')}</span>
+                      </p>
+                      <p className="text-gray-600 text-xs">
                         ({targetSounds.map(s => s.name).join(', ')})
                       </p>
                       {!isCorrect && (
-                        <p className="text-gray-500">
-                          Your selection: {[...selectedSounds].map(id => 
+                        <p className="text-gray-700 mt-3 font-medium">
+                          Your selection: <span className="text-2xl">{[...selectedSounds].map(id => 
                             GAME_SOUNDS.find(s => s.id === id)?.icon
-                          ).join(' ') || 'None'}
+                          ).join(' ') || 'None'}</span>
                         </p>
                       )}
                     </div>
@@ -634,10 +646,10 @@ export default function App() {
                   <Button 
                     onClick={resetToOperator}
                     size="lg"
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all"
                   >
-                    <Settings className="w-5 h-5 mr-2" />
-                    Return to Operator
+                    <Settings className="w-6 h-6 mr-2" />
+                    🏠 Return to Operator
                   </Button>
                 </Card>
               </motion.div>

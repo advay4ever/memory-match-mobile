@@ -14,47 +14,47 @@ export function LandingPage({ onStart }: LandingPageProps) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-2xl"
+        className="w-full max-w-4xl"
       >
-        <Card className="p-8 bg-white/95 backdrop-blur-sm shadow-2xl">
+        <Card className="p-12 bg-white/95 backdrop-blur-sm shadow-2xl">
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="flex justify-center mb-4">
-              <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center">
-                <Volume2 className="w-10 h-10 text-white" />
+          <div className="text-center mb-10">
+            <div className="flex justify-center mb-6">
+              <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
+                <Volume2 className="w-12 h-12 text-white" />
               </div>
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            <h1 className="text-5xl font-bold text-gray-900 mb-3">
               Memory Match Mobile
             </h1>
-            <p className="text-lg text-gray-600">
+            <p className="text-xl text-gray-600">
               Cognitive Assessment Game
             </p>
           </div>
 
           {/* Description */}
-          <div className="mb-8 space-y-4">
-            <p className="text-gray-700 leading-relaxed">
+          <div className="mb-10 space-y-4">
+            <p className="text-gray-700 leading-relaxed text-lg">
               Memory Match Mobile is a cognitive memory game that tests auditory memory and recall. The app plays a sequence of three different sounds, then challenges users to identify which sounds they heard after a brief delay.
             </p>
-            <p className="text-gray-700 leading-relaxed">
+            <p className="text-gray-700 leading-relaxed text-lg">
               Designed to support memory training and cognitive engagement, the app tracks performance over time and stores all data locally in the browser for privacy.
             </p>
           </div>
 
           {/* Features */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div className="flex flex-col items-center text-center p-4 bg-purple-50 rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div className="flex flex-col items-center text-center p-6 bg-purple-50 rounded-lg">
               <Brain className="w-8 h-8 text-purple-600 mb-2" />
               <h3 className="font-semibold text-gray-900 mb-1">Memory Testing</h3>
               <p className="text-sm text-gray-600">Auditory recall assessment</p>
             </div>
-            <div className="flex flex-col items-center text-center p-4 bg-pink-50 rounded-lg">
+            <div className="flex flex-col items-center text-center p-6 bg-pink-50 rounded-lg">
               <Timer className="w-8 h-8 text-pink-600 mb-2" />
               <h3 className="font-semibold text-gray-900 mb-1">Quick Sessions</h3>
               <p className="text-sm text-gray-600">Complete in under 2 minutes</p>
             </div>
-            <div className="flex flex-col items-center text-center p-4 bg-purple-50 rounded-lg">
+            <div className="flex flex-col items-center text-center p-6 bg-purple-50 rounded-lg">
               <TrendingUp className="w-8 h-8 text-purple-600 mb-2" />
               <h3 className="font-semibold text-gray-900 mb-1">Track Progress</h3>
               <p className="text-sm text-gray-600">Monitor performance over time</p>
@@ -62,8 +62,8 @@ export function LandingPage({ onStart }: LandingPageProps) {
           </div>
 
           {/* Disclaimer */}
-          <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-            <p className="text-sm text-orange-800 text-center">
+          <div className="mb-8 p-5 bg-orange-50 border border-orange-200 rounded-lg">
+            <p className="text-base text-orange-800 text-center">
               <strong>Note:</strong> This is a screening tool, not a medical diagnostic device. 
               Consult healthcare professionals for any concerns.
             </p>
@@ -74,7 +74,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
             <Button
               onClick={onStart}
               size="lg"
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-12 py-7 text-xl font-semibold shadow-lg hover:shadow-xl transition-all"
             >
               Start Assessment
             </Button>
