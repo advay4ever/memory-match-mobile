@@ -13,9 +13,9 @@ export function LandingPage({ onStart }: LandingPageProps) {
   const { t } = useTranslation();
   
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-purple-500 to-pink-500">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
       {/* Language Selector - Top Right */}
-      <div className="absolute top-4 right-4 z-10">
+      <div className="absolute top-6 right-6 z-10">
         <LanguageSelector />
       </div>
       
@@ -29,7 +29,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
           {/* Header */}
           <div className="text-center mb-10">
             <div className="flex justify-center mb-6">
-              <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-lg">
+              <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
                 <Volume2 className="w-12 h-12 text-white" />
               </div>
             </div>
@@ -53,26 +53,26 @@ export function LandingPage({ onStart }: LandingPageProps) {
 
           {/* Features */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-            <div className="flex flex-col items-center text-center p-6 bg-purple-50 rounded-lg">
-              <Brain className="w-8 h-8 text-purple-600 mb-2" />
+            <div className="flex flex-col items-center text-center p-6 bg-blue-50 rounded-lg border-2 border-blue-200">
+              <Brain className="w-8 h-8 text-blue-700 mb-2" />
               <h3 className="font-semibold text-gray-900 mb-1">{t('landing.feature1Title')}</h3>
               <p className="text-sm text-gray-600">{t('landing.feature1Desc')}</p>
             </div>
-            <div className="flex flex-col items-center text-center p-6 bg-pink-50 rounded-lg">
-              <Timer className="w-8 h-8 text-pink-600 mb-2" />
+            <div className="flex flex-col items-center text-center p-6 bg-green-50 rounded-lg border-2 border-green-200">
+              <Timer className="w-8 h-8 text-green-700 mb-2" />
               <h3 className="font-semibold text-gray-900 mb-1">{t('landing.feature2Title')}</h3>
               <p className="text-sm text-gray-600">{t('landing.feature2Desc')}</p>
             </div>
-            <div className="flex flex-col items-center text-center p-6 bg-purple-50 rounded-lg">
-              <TrendingUp className="w-8 h-8 text-purple-600 mb-2" />
+            <div className="flex flex-col items-center text-center p-6 bg-blue-50 rounded-lg border-2 border-blue-200">
+              <TrendingUp className="w-8 h-8 text-blue-700 mb-2" />
               <h3 className="font-semibold text-gray-900 mb-1">{t('landing.feature3Title')}</h3>
               <p className="text-sm text-gray-600">{t('landing.feature3Desc')}</p>
             </div>
           </div>
 
           {/* Disclaimer */}
-          <div className="mb-8 p-5 bg-orange-50 border border-orange-200 rounded-lg">
-            <p className="text-base text-orange-800 text-center">
+          <div className="mb-8 p-5 bg-amber-50 border-2 border-amber-300 rounded-lg">
+            <p className="text-base text-amber-900 text-center">
               <strong>{t('landing.disclaimer').split('.')[0]}.</strong> {t('landing.disclaimer').split('.')[1]}.
             </p>
           </div>
@@ -82,7 +82,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
             <Button
               onClick={onStart}
               size="lg"
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-12 py-7 text-xl font-semibold shadow-lg hover:shadow-xl transition-all"
+              className="bg-green-600 hover:bg-green-700 text-white px-12 py-7 text-xl font-semibold shadow-lg hover:shadow-xl transition-all"
             >
               {t('landing.startButton')}
             </Button>
