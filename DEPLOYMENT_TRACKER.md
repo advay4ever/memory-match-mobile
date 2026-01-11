@@ -1,4 +1,19 @@
-# Deployment Tracker — Memory Match Mobile
+# Deployment Tracker — Mem---
+
+## 👤 Me Descriptio## 🔴 Critical (Blockers) — Must before pilot
+- [x] Verify translations exist and are complete for all 15 languages (owner: Advay) — ETA: DONE ✅
+- [ ] Implement PWA offline support (service worker, cache assets, IndexedDB) (owner: ) — ETA:
+- [ ] Persist assessment results locally and add export (CSV/PDF) (owner: ) — ETA:
+- [ ] Test on cheap Android phone (Android 8/9, 1-2GB RAM) and fix issues (owner: ) — ETA:
+- [ ] Privacy policy & data retention notice (translations) (owner: ) — ETA:ho I am:** [Add your name and role here]
+
+**My goal with this project:** [Describe why you're building this app and what impact you hope to make for rural health workers]
+
+**Timeline:** [Add your target launch date or milestone]
+
+---
+
+## 🔴 Critical (Blockers) — Must before pilotile
 
 ## 🏥 About This App
 
