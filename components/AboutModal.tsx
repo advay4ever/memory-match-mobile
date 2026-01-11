@@ -29,14 +29,37 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
 
         {/* Content */}
         <div className="space-y-6 text-gray-700">
+          {/* Profile Photo */}
+          <div className="flex justify-center">
+            <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg border-4 border-white">
+              {/* Placeholder - Will show initials until you add your photo */}
+              {/* To add your photo: Place image at /public/images/profile.jpg */}
+              <img 
+                src="/images/profile.jpg" 
+                alt="Advay Tripathi"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  // Fallback to initials if image not found
+                  e.currentTarget.style.display = 'none';
+                  if (e.currentTarget.nextElementSibling) {
+                    (e.currentTarget.nextElementSibling as HTMLElement).style.display = 'flex';
+                  }
+                }}
+              />
+              <div className="w-full h-full flex items-center justify-center" style={{ display: 'none' }}>
+                <span className="text-white text-5xl font-bold">AT</span>
+              </div>
+            </div>
+          </div>
+
           {/* About Me */}
           <div>
             <h3 className="font-semibold text-xl text-gray-900 mb-2">👤 About Me</h3>
             <p className="leading-relaxed">
-              Hi, my name is <strong>Advay Tripathi</strong>. I'm a 7th-grade student passionate about using technology to solve real-world problems. 
-              I have developed a cognitive assessment app designed specifically to support rural health workers who lack access to expensive medical equipment. 
-              My app makes cognitive health screening simple, affordable, and accessible for people in remote communities. By identifying early signs of 
-              memory impairment and dementia, this tool ensures that more people can receive the care they need while there is still time to make a difference.
+              Hi, my name is <strong>Advay Tripathi</strong>. I'm a 6th-grade student who is passionate about using technology to solve real-world problems. 
+              Academically, I enjoy solving math problems and never get tired of doing them. I also love learning about history and reading books. 
+              Outside of academics, I enjoy building with LEGOs and playing sports. I love to play baseball. My position in baseball is pitcher and have been playing for four years. 
+              Other sports I enjoy playing with my friends include basketball and football.
             </p>
           </div>
 
