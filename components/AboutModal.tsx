@@ -29,22 +29,14 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
 
         {/* Content */}
         <div className="space-y-6 text-gray-700">
-          {/* Who I Am */}
+          {/* About Me */}
           <div>
-            <h3 className="font-semibold text-xl text-gray-900 mb-2">👤 Who I Am</h3>
+            <h3 className="font-semibold text-xl text-gray-900 mb-2">👤 About Me</h3>
             <p className="leading-relaxed">
-              I'm <strong>Advay Tripathi</strong>, a developer passionate about using technology to solve real-world healthcare challenges. 
-              I built this cognitive assessment tool to help bridge the gap in healthcare accessibility for rural and underserved communities.
-            </p>
-          </div>
-
-          {/* Why I Built This */}
-          <div>
-            <h3 className="font-semibold text-xl text-gray-900 mb-2">🎯 Why I Built This</h3>
-            <p className="leading-relaxed">
-              Rural health workers often lack access to expensive diagnostic equipment and reliable internet connectivity. 
-              This app provides a free, accessible way to screen patients for cognitive impairment using just a smartphone—no 
-              matter how basic the device or how poor the connection.
+              Hi, my name is <strong>Advay Tripathi</strong>. I'm a 7th-grade student passionate about using technology to solve real-world problems. 
+              I have developed a cognitive assessment app designed specifically to support rural health workers who lack access to expensive medical equipment. 
+              My app makes cognitive health screening simple, affordable, and accessible for people in remote communities. By identifying early signs of 
+              memory impairment and dementia, this tool ensures that more people can receive the care they need while there is still time to make a difference.
             </p>
           </div>
 
