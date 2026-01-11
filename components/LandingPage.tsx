@@ -4,6 +4,8 @@ import { Volume2, Brain, Timer, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from './LanguageSelector';
+import { AboutModal } from './AboutModal';
+import { useState } from 'react';
 
 interface LandingPageProps {
   onStart: () => void;
@@ -11,13 +13,28 @@ interface LandingPageProps {
 
 export function LandingPage({ onStart }: LandingPageProps) {
   const { t } = useTranslation();
+  const [showAbout, setShowAbout] = useState(false);
   
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
+      {/* About Link - Top Left */}
+      <div className="absolute top-6 left-6 z-10">
+        <button
+          onClick={() => setShowAbout(true)}
+          className="text-blue-600 hover:text-blue-700 font-semibold text-lg underline decoration-2 underline-offset-4 transition-colors"
+          aria-label="About this project"
+        >
+          About
+        </button>
+      </div>
+
       {/* Language Selector - Top Right */}
       <div className="absolute top-6 right-6 z-10">
         <LanguageSelector />
       </div>
+
+      {/* About Modal */}
+      <AboutModal isOpen={showAbout} onClose={() => setShowAbout(false)} />
       
       <motion.div
         initial={{ opacity: 0, y: 20 }}
