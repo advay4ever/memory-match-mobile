@@ -1,5 +1,22 @@
 # Deployment Tracker — Memory Match Mobile
 
+## 🏥 About This App
+
+**Memory Match Mobile** is a cognitive assessment tool designed for rural health workers to screen patients for memory and cognitive impairment. The app tests immediate recall, delayed recall, and attention through an audio-based number sequence game.
+
+**Target Users:** Community health workers, nurses, and medical staff in rural clinics with limited resources, unreliable internet, and basic smartphones.
+
+**Key Features:**
+- 🌍 15 languages (English, Chinese, Hindi, Spanish, French, Arabic, Bengali, Portuguese, Russian, Japanese, German, Swahili, Hausa, Amharic, Yoruba)
+- ♿ WCAG 2.1 AA accessible (large touch targets, keyboard navigation, screen reader support)
+- 📱 Optimized for cheap Android phones ($50-100 devices)
+- 🔊 Audio-based cognitive testing
+- 📊 Exportable patient results
+
+**Current Status:** 92/100 accessibility score, production-ready UI, awaiting deployment preparation.
+
+---
+
 Use this file to track launch tasks for rural health workers. Click checkboxes in VS Code or GitHub to mark done.
 
 ## How to use
