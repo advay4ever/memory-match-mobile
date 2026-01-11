@@ -1,0 +1,28 @@
+# Python virtual environment
+venv/
+env/
+*.pyc
+__pycache__/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Flask
+instance/
+.webassets-cache
+
+# Environment variables
+.env
+.flaskenv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
