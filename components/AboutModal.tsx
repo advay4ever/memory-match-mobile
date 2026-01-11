@@ -32,10 +32,8 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
           {/* Profile Photo */}
           <div className="flex justify-center">
             <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg border-4 border-white">
-              {/* Placeholder - Will show initials until you add your photo */}
-              {/* To add your photo: Place image at /public/images/profile.jpg */}
               <img 
-                src="/images/profile.jpg" 
+                src="/images/IMG_0277.jpg" 
                 alt="Advay Tripathi"
                 className="w-full h-full object-cover"
                 onError={(e) => {
@@ -63,6 +61,17 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
             </p>
           </div>
 
+          {/* Project Goals */}
+          <div>
+            <h3 className="font-semibold text-xl text-gray-900 mb-2">🚀 Project Goals</h3>
+            <p className="leading-relaxed">
+              My goal is to deploy this tool to rural health clinics where workers lack expensive diagnostic equipment 
+              and reliable internet. I want to help screen patients for early signs of dementia and memory impairment in 
+              underserved communities, proving that accessible web technology can close healthcare gaps just as effectively 
+              as costly native apps.
+            </p>
+          </div>
+
           {/* Technical Highlights */}
           <div>
             <h3 className="font-semibold text-xl text-gray-900 mb-2">🛠️ Technical Highlights</h3>
@@ -75,17 +84,6 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
             </ul>
           </div>
 
-          {/* Goals */}
-          <div>
-            <h3 className="font-semibold text-xl text-gray-900 mb-2">🚀 Project Goals</h3>
-            <p className="leading-relaxed">
-              My goal is to deploy this tool to rural health clinics where workers lack expensive diagnostic equipment 
-              and reliable internet. I want to help screen patients for early signs of dementia and memory impairment in 
-              underserved communities, proving that accessible web technology can close healthcare gaps just as effectively 
-              as costly native apps.
-            </p>
-          </div>
-
           {/* Get In Touch */}
           <div>
             <h3 className="font-semibold text-xl text-gray-900 mb-2">📧 Get In Touch</h3>
@@ -93,14 +91,6 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
               <p><strong>GitHub:</strong> <a href="https://github.com/advay4ever" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">@advay4ever</a></p>
               <p><strong>Project:</strong> <a href="https://github.com/advay4ever/memory-match-mobile" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">memory-match-mobile</a></p>
             </div>
-          </div>
-
-          {/* Status */}
-          <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-            <p className="text-sm text-blue-900">
-              <strong>Current Status:</strong> Production-ready with 92/100 accessibility score. 
-              Preparing for deployment to rural health clinics worldwide.
-            </p>
           </div>
         </div>
 
