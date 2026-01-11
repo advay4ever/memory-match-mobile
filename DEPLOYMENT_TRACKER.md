@@ -26,7 +26,17 @@ Use this file to track launch tasks for rural health workers. Click checkboxes i
 
 ---
 
-## 🔴 Critical (Blockers) — Must before pilot
+## � Me Description
+
+**Who I am:** [Add your name and role here]
+
+**My goal with this project:** [Describe why you're building this app and what impact you hope to make for rural health workers]
+
+**Timeline:** [Add your target launch date or milestone]
+
+---
+
+## �🔴 Critical (Blockers) — Must before pilot
 - [ ] Verify translations exist and are complete for all 15 languages (owner: ) — ETA:
 - [ ] Implement PWA offline support (service worker, cache assets, IndexedDB) (owner: ) — ETA:
 - [ ] Persist assessment results locally and add export (CSV/PDF) (owner: ) — ETA:
