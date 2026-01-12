@@ -398,7 +398,7 @@ export default function App() {
                       <div className="space-y-3">
                         {recentSessions.slice(-3).map((session, index) => (
                           <div key={session.id} className="flex justify-between text-base text-gray-700 bg-white p-3 rounded-lg border border-gray-200">
-                            <span className="font-medium">🎯 Session {recentSessions.length - index}</span>
+                            <span className="font-medium">🎯 Session {session.gameNumber}</span>
                             <span className={session.accuracy >= 60 ? 'text-green-700 font-bold' : 'text-red-700 font-bold'}>
                               {session.accuracy.toFixed(0)}% • {(session.reactionTime / 1000).toFixed(1)}s
                             </span>
