@@ -18,10 +18,10 @@ export function LandingPage({ onStart }: LandingPageProps) {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
       {/* About Link - Top Left */}
-      <div className="absolute top-6 left-6 z-10">
+      <div className="absolute top-4 left-4 md:top-6 md:left-6 z-10">
         <button
           onClick={() => setShowAbout(true)}
-          className="text-blue-600 hover:text-blue-700 font-semibold text-lg underline decoration-2 underline-offset-4 transition-colors"
+          className="text-blue-600 hover:text-blue-700 font-semibold text-sm md:text-lg underline decoration-2 underline-offset-4 transition-colors bg-white/90 px-3 py-1 rounded-lg shadow-sm"
           aria-label="About this project"
         >
           About
@@ -29,7 +29,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
       </div>
 
       {/* Language Selector - Top Right */}
-      <div className="absolute top-6 right-6 z-10">
+      <div className="absolute top-4 right-4 md:top-6 md:right-6 z-10">
         <LanguageSelector />
       </div>
 
@@ -40,20 +40,20 @@ export function LandingPage({ onStart }: LandingPageProps) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-4xl"
+        className="w-full max-w-4xl mt-16 md:mt-0"
       >
-        <Card className="p-12 bg-white/95 backdrop-blur-sm shadow-2xl">
+        <Card className="p-6 md:p-12 bg-white/95 backdrop-blur-sm shadow-2xl">
           {/* Header */}
-          <div className="text-center mb-10">
-            <div className="flex justify-center mb-6">
-              <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
-                <Volume2 className="w-12 h-12 text-white" />
+          <div className="text-center mb-8 md:mb-10">
+            <div className="flex justify-center mb-4 md:mb-6">
+              <div className="w-20 h-20 md:w-24 md:h-24 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                <Volume2 className="w-10 h-10 md:w-12 md:h-12 text-white" />
               </div>
             </div>
-            <h1 className="text-5xl font-bold text-gray-900 mb-3">
+            <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-3">
               {t('landing.title')}
             </h1>
-            <p className="text-xl text-gray-600">
+            <p className="text-lg md:text-xl text-gray-600">
               {t('landing.subtitle')}
             </p>
           </div>
