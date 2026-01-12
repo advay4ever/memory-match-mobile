@@ -392,7 +392,9 @@ export default function App() {
                   
                   {recentSessions.length > 0 && (
                     <div className="mb-8 p-6 bg-blue-50 rounded-2xl border-2 border-blue-200">
-                      <h3 className="text-base mb-4 text-gray-800 font-bold">📈 Recent Sessions:</h3>
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-base text-gray-800 font-bold">📈 Recent Sessions:</h3>
+                      </div>
                       <div className="space-y-3">
                         {recentSessions.slice(-3).map((session, index) => (
                           <div key={session.id} className="flex justify-between text-base text-gray-700 bg-white p-3 rounded-lg border border-gray-200">
@@ -418,6 +420,23 @@ export default function App() {
                       <Play className="w-7 h-7 mr-2" />
                       🚀 Start Memory Test
                     </Button>
+                    
+                    {recentSessions.length > 0 && (
+                      <Button
+                        onClick={() => {
+                          if (window.confirm('Are you sure you want to clear all session data? This cannot be undone.')) {
+                            dataManager.current.clearAllData();
+                            setSessionNumber(1);
+                            window.location.reload();
+                          }
+                        }}
+                        variant="outline"
+                        size="lg"
+                        className="w-full border-2 border-red-400 text-red-600 hover:bg-red-50 hover:border-red-600 font-semibold"
+                      >
+                        🗑️ Clear All Sessions
+                      </Button>
+                    )}
                   </div>
                 </Card>
               </motion.div>
