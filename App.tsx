@@ -61,7 +61,7 @@ export default function App() {
 
   // Preload dog bark audio
   const dogBarkAudio = useMemo(() => {
-    const audio = new Audio('/sounds/dog-bark-419014.mp3');
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/dog-bark-419014.mp3`);
     audio.preload = 'auto';
     audio.volume = 0.5;
     return audio;
@@ -69,7 +69,7 @@ export default function App() {
 
   // Preload car horn audio
   const carHornAudio = useMemo(() => {
-    const audio = new Audio('/sounds/car-horn-352443.mp3');
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/car-horn-352443.mp3`);
     audio.preload = 'auto';
     audio.volume = 0.5;
     return audio;
@@ -77,7 +77,7 @@ export default function App() {
 
   // Preload bird chirping audio
   const birdChirpAudio = useMemo(() => {
-    const audio = new Audio('/sounds/bird-chirping-428659.mp3');
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/bird-chirping-428659.mp3`);
     audio.preload = 'auto';
     audio.volume = 0.5;
     return audio;
@@ -85,7 +85,7 @@ export default function App() {
 
   // Preload bell ring audio
   const bellRingAudio = useMemo(() => {
-    const audio = new Audio('/sounds/bell-ring-199839.mp3');
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/bell-ring-199839.mp3`);
     audio.preload = 'auto';
     audio.volume = 0.5;
     return audio;
@@ -93,7 +93,7 @@ export default function App() {
 
   // Preload water droplet audio
   const waterDropAudio = useMemo(() => {
-    const audio = new Audio('/sounds/water-droplet-165637.mp3');
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/water-droplet-165637.mp3`);
     audio.preload = 'auto';
     audio.volume = 0.5;
     return audio;

@@ -33,7 +33,7 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
           <div className="flex justify-center">
             <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg border-4 border-white">
               <img 
-                src="/images/IMG_0277.jpg" 
+                src={`${import.meta.env.BASE_URL}images/IMG_0277.jpg`}
                 alt="Advay Tripathi"
                 className="w-full h-full object-cover"
                 onError={(e) => {
