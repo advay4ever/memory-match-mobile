@@ -100,7 +100,7 @@ export default function App() {
   }, []);
 
   const phoneRingAudio = useMemo(() => {
-    const soundPath = `${import.meta.env.BASE_URL}sounds/phone-ringing-382734.mp3`;
+    const soundPath = `${import.meta.env.BASE_URL}sounds/phone-ringing-382734.mp3?v=2`;
     console.log('Phone ring sound path:', soundPath);
     const audio = new Audio(soundPath);
     audio.preload = 'auto';
