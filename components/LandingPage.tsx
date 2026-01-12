@@ -21,7 +21,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
       <div className="absolute top-4 left-4 md:top-6 md:left-6 z-10">
         <button
           onClick={() => setShowAbout(true)}
-          className="text-blue-600 hover:text-blue-700 font-semibold text-sm md:text-lg underline decoration-2 underline-offset-4 transition-colors bg-white/90 px-3 py-1 rounded-lg shadow-sm"
+          className="text-blue-600 hover:text-blue-700 font-semibold text-sm md:text-lg underline decoration-2 underline-offset-4 transition-colors"
           aria-label="About this project"
         >
           About
@@ -40,7 +40,7 @@ export function LandingPage({ onStart }: LandingPageProps) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full max-w-4xl mt-16 md:mt-0"
+        className="w-full max-w-4xl mt-32 sm:mt-36 md:mt-0"
       >
         <Card className="p-6 md:p-12 bg-white/95 backdrop-blur-sm shadow-2xl">
           {/* Header */}
