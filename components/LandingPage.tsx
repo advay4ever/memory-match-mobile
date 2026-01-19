@@ -22,9 +22,9 @@ export function LandingPage({ onStart }: LandingPageProps) {
         <button
           onClick={() => setShowAbout(true)}
           className="text-blue-600 hover:text-blue-700 font-semibold text-sm md:text-lg underline decoration-2 underline-offset-4 transition-colors"
-          aria-label="About this project"
+          aria-label={t('landing.aboutLink')}
         >
-          About
+          {t('landing.aboutLink')}
         </button>
       </div>
 

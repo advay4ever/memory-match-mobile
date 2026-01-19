@@ -3,10 +3,11 @@ import { Button } from './components/ui/button';
 import { Card } from './components/ui/card';
 import { Badge } from './components/ui/badge';
 import { Alert, AlertDescription } from './components/ui/alert';
-import { Volume2, Clock, Check, X, Play, Settings, AlertTriangle } from 'lucide-react';
+import { Volume2, Clock, Check, X, Play, Settings, AlertTriangle, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { DataManager, SessionData } from './components/DataManager';
 import { LandingPage } from './components/LandingPage';
+import { useTranslation } from 'react-i18next';
 
 type GamePhase = 'setup' | 'instructions' | 'listen' | 'delay' | 'selection' | 'feedback' | 'results';
 type UserRole = 'operator' | 'patient';
@@ -19,17 +20,19 @@ interface Sound {
   soundType: 'dog' | 'bell' | 'water' | 'bird' | 'horn' | 'phone';
 }
 
-// Exactly as specified in requirements: realistic sounds with clear icons
-const GAME_SOUNDS: Sound[] = [
-  { id: 1, name: 'Dog Bark', icon: '🐕', description: 'Woof woof', soundType: 'dog' },
-  { id: 2, name: 'Bell Ring', icon: '🔔', description: 'Ding dong', soundType: 'bell' },
-  { id: 3, name: 'Water Drop', icon: '💧', description: 'Drip drop', soundType: 'water' },
-  { id: 4, name: 'Bird Chirp', icon: '🐦', description: 'Tweet tweet', soundType: 'bird' },
-  { id: 5, name: 'Car Horn', icon: '🚗', description: 'Beep beep', soundType: 'horn' },
-  { id: 6, name: 'Phone Ring', icon: '📞', description: 'Ring ring', soundType: 'phone' },
-];
-
 export default function App() {
+  const { t, i18n } = useTranslation();
+  
+  // Define sounds with useMemo so they update when language changes
+  const GAME_SOUNDS: Sound[] = useMemo(() => [
+    { id: 1, name: t('game.sounds.dogBark'), icon: '🐕', description: 'Woof woof', soundType: 'dog' },
+    { id: 2, name: t('game.sounds.bellRing'), icon: '🔔', description: 'Ding dong', soundType: 'bell' },
+    { id: 3, name: t('game.sounds.waterDrop'), icon: '💧', description: 'Drip drop', soundType: 'water' },
+    { id: 4, name: t('game.sounds.birdChirp'), icon: '🐦', description: 'Tweet tweet', soundType: 'bird' },
+    { id: 5, name: t('game.sounds.carHorn'), icon: '🚗', description: 'Beep beep', soundType: 'horn' },
+    { id: 6, name: t('game.sounds.phoneRing'), icon: '📞', description: 'Ring ring', soundType: 'phone' },
+  ], [t, i18n.language]);
+  
   const [showLanding, setShowLanding] = useState(true);
   const [gamePhase, setGamePhase] = useState<GamePhase>('setup');
   const [userRole, setUserRole] = useState<UserRole>('operator');
@@ -43,8 +46,24 @@ export default function App() {
   const [selectionStartTime, setSelectionStartTime] = useState<number>(0);
   const [reactionTime, setReactionTime] = useState<number>(0);
   const [showAlert, setShowAlert] = useState(false);
+  const [showLangSelector, setShowLangSelector] = useState(false);
   
   const dataManager = useRef(DataManager.getInstance());
+
+  const languages = [
+    { code: 'en', name: 'English', flag: '🇺🇸' },
+    { code: 'zh', name: '中文', flag: '🇨🇳' },
+    { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' },
+    { code: 'es', name: 'Español', flag: '🇪🇸' },
+    { code: 'fr', name: 'Français', flag: '🇫🇷' },
+    { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+    { code: 'bn', name: 'বাংলা', flag: '🇧🇩' },
+    { code: 'pt', name: 'Português', flag: '🇧🇷' },
+    { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+  ];
+
+  const currentLang = languages.find(lang => lang.code === i18n.language) || languages[0];
+
 
   // Initialize audio context
   useEffect(() => {
@@ -58,6 +77,36 @@ export default function App() {
     };
     initAudio();
   }, []);
+
+  // Close language selector when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (showLangSelector && !target.closest('.lang-selector-container')) {
+        setShowLangSelector(false);
+      }
+    };
+
+    if (showLangSelector) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showLangSelector]);
+
+  // Update target sounds when language changes (if game is in progress)
+  useEffect(() => {
+    if (targetSounds.length > 0) {
+      // Map the current target sounds to their new translated versions
+      const updatedTargets = targetSounds.map(oldSound => {
+        const newSound = GAME_SOUNDS.find(s => s.id === oldSound.id);
+        return newSound || oldSound;
+      });
+      setTargetSounds(updatedTargets);
+    }
+  }, [i18n.language, GAME_SOUNDS]);
 
   // Preload dog bark audio
   const dogBarkAudio = useMemo(() => {
@@ -333,13 +382,46 @@ export default function App() {
       {/* Header */}
       <div className="p-4 bg-white border-b-2 border-gray-200 shadow-sm relative">
         <div className="flex justify-between items-center max-w-md mx-auto">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Memory Match! 🎮</h1>
+          <div className="flex-1">
+            <h1 className="text-xl font-bold text-gray-900">{t('game.title')} 🎮</h1>
             <p className="text-sm text-gray-600 font-medium">
-              {userRole === 'operator' ? '🎯 Operator View' : `🎪 Session ${sessionNumber}`}
+              {userRole === 'operator' ? `🎯 ${t('game.operatorView')}` : t('game.sessionNumber', { number: sessionNumber })}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {/* Language Selector Button */}
+            <div className="relative lang-selector-container">
+              <Button
+                onClick={() => setShowLangSelector(!showLangSelector)}
+                variant="outline"
+                size="sm"
+                className="border-2 border-gray-300 hover:border-blue-500 px-2 py-1"
+              >
+                <Globe className="w-4 h-4 mr-1" />
+                {currentLang.flag}
+              </Button>
+              
+              {showLangSelector && (
+                <div className="absolute right-0 mt-2 w-48 bg-white border-2 border-gray-300 rounded-lg shadow-xl z-50 max-h-64 overflow-y-auto">
+                  {languages.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => {
+                        i18n.changeLanguage(lang.code);
+                        setShowLangSelector(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 hover:bg-blue-50 flex items-center gap-2 ${
+                        lang.code === i18n.language ? 'bg-blue-100 font-bold' : ''
+                      }`}
+                    >
+                      <span>{lang.flag}</span>
+                      <span className="text-sm">{lang.name}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            
             {userRole === 'patient' && (
               <Badge variant="secondary" className="px-3 py-2 bg-blue-600 text-white border-0">
                 <Clock className="w-3 h-3 mr-1" />
@@ -355,7 +437,7 @@ export default function App() {
             size="default"
             className="absolute top-4 right-4 border-2 border-gray-700 hover:border-blue-600 hover:bg-blue-50 text-gray-900 font-bold text-base px-4 py-2"
           >
-            ← Home
+            ← {t('common.home')}
           </Button>
         )}
       </div>
@@ -365,7 +447,7 @@ export default function App() {
         <Alert className="mx-4 mt-4 border-2 border-amber-400 bg-amber-50 shadow-md">
           <AlertTriangle className="h-5 w-5 text-amber-700" />
           <AlertDescription className="text-amber-900 font-medium">
-            📊 Performance alert: Consider consulting with healthcare provider.
+            📊 {t('game.alertMessage')}
           </AlertDescription>
         </Alert>
       )}
@@ -384,21 +466,21 @@ export default function App() {
               >
                 <Card className="p-10 bg-white shadow-xl border-2 border-gray-200 rounded-3xl">
                   <h2 className="text-4xl mb-6 text-center font-bold text-gray-900">
-                    🧠 Cognitive Assessment
+                    🧠 {t('game.setupTitle')}
                   </h2>
                   <p className="text-gray-700 mb-8 text-center font-medium text-xl">
-                    Memory Match Test for Cognitive Health ✨
+                    {t('game.setupSubtitle')} ✨
                   </p>
                   
                   {recentSessions.length > 0 && (
                     <div className="mb-8 p-6 bg-blue-50 rounded-2xl border-2 border-blue-200">
                       <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-base text-gray-800 font-bold">📈 Recent Sessions:</h3>
+                        <h3 className="text-base text-gray-800 font-bold">📈 {t('game.recentSessions')}</h3>
                       </div>
                       <div className="space-y-3">
                         {recentSessions.slice(-3).map((session, index) => (
                           <div key={session.id} className="flex justify-between text-base text-gray-700 bg-white p-3 rounded-lg border border-gray-200">
-                            <span className="font-medium">🎯 Session {session.gameNumber}</span>
+                            <span className="font-medium">🎯 {t('game.session')} {session.gameNumber}</span>
                             <span className={session.accuracy >= 60 ? 'text-green-700 font-bold' : 'text-red-700 font-bold'}>
                               {session.accuracy.toFixed(0)}% • {(session.reactionTime / 1000).toFixed(1)}s
                             </span>
@@ -410,7 +492,7 @@ export default function App() {
                   
                   <div className="space-y-5">
                     <p className="text-lg text-gray-600 text-center font-medium">
-                      👨‍⚕️ Operator: Start the test when patient is ready
+                      👨‍⚕️ {t('game.operatorInstruction')}
                     </p>
                     <Button 
                       onClick={startGame}
@@ -418,13 +500,13 @@ export default function App() {
                       className="w-full bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-7 shadow-lg hover:shadow-xl transition-all"
                     >
                       <Play className="w-7 h-7 mr-2" />
-                      🚀 Start Memory Test
+                      🚀 {t('game.startTest')}
                     </Button>
                     
                     {recentSessions.length > 0 && (
                       <Button
                         onClick={() => {
-                          if (window.confirm('Are you sure you want to clear all session data? This cannot be undone.')) {
+                          if (window.confirm(t('game.clearConfirm'))) {
                             dataManager.current.clearAllData();
                             setSessionNumber(1);
                             window.location.reload();
@@ -434,7 +516,7 @@ export default function App() {
                         size="lg"
                         className="w-full border-2 border-red-400 text-red-600 hover:bg-red-50 hover:border-red-600 font-semibold"
                       >
-                        🗑️ Clear All Sessions
+                        🗑️ {t('game.clearAllSessions')}
                       </Button>
                     )}
                   </div>
@@ -452,7 +534,7 @@ export default function App() {
               >
                 <Card className="p-8 bg-white shadow-xl border-2 border-green-300 rounded-3xl">
                   <h2 className="text-2xl mb-6 text-center font-bold text-gray-900">
-                    📋 Instructions
+                    📋 {t('game.instructionsTitle')}
                   </h2>
                   
                   <div className="space-y-4 mb-8">
@@ -460,21 +542,21 @@ export default function App() {
                       <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center shadow-md">
                         <span className="text-lg text-white font-bold">1</span>
                       </div>
-                      <p className="text-gray-800 font-medium">🎵 Listen to 3 different sounds</p>
+                      <p className="text-gray-800 font-medium">🎵 {t('game.instruction1')}</p>
                     </div>
                     
                     <div className="flex items-center space-x-4 bg-green-50 p-4 rounded-xl border-2 border-green-200">
                       <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center shadow-md">
                         <span className="text-lg text-white font-bold">2</span>
                       </div>
-                      <p className="text-gray-800 font-medium">⏳ Wait for the selection screen</p>
+                      <p className="text-gray-800 font-medium">⏳ {t('game.instruction2')}</p>
                     </div>
                     
                     <div className="flex items-center space-x-4 bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
                       <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center shadow-md">
                         <span className="text-lg text-white font-bold">3</span>
                       </div>
-                      <p className="text-gray-800 font-medium">👆 Tap the 3 sounds you heard</p>
+                      <p className="text-gray-800 font-medium">👆 {t('game.instruction3')}</p>
                     </div>
                   </div>
                   
@@ -484,7 +566,7 @@ export default function App() {
                     className="w-full bg-green-600 hover:bg-green-700 text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all"
                   >
                     <Volume2 className="w-6 h-6 mr-2" />
-                    🎧 Ready to Listen!
+                    🎧 {t('game.readyButton')}
                   </Button>
                 </Card>
               </motion.div>
@@ -510,7 +592,7 @@ export default function App() {
                   </motion.div>
                   
                   <h2 className="text-2xl mb-6 text-center font-bold text-blue-900">
-                    🎵 Listen carefully...
+                    🎵 {t('game.listenTitle')}
                   </h2>
                   
                   <div className="flex justify-center space-x-4 mb-6">
@@ -536,7 +618,7 @@ export default function App() {
                   </div>
                   
                   <p className="text-center text-gray-700 font-bold text-lg">
-                    🔊 Sound {Math.min(currentSoundIndex + 1, 3)} of 3
+                    🔊 {t('game.soundOf', { current: Math.min(currentSoundIndex + 1, 3), total: 3 })}
                   </p>
                 </Card>
               </motion.div>
@@ -552,7 +634,7 @@ export default function App() {
               >
                 <Card className="p-8 bg-white shadow-xl text-center border-2 border-amber-300 rounded-3xl">
                   <h2 className="text-2xl mb-6 font-bold text-amber-900">
-                    ⏰ Please wait...
+                    ⏰ {t('game.delayTitle')}
                   </h2>
                   
                   <motion.div
@@ -564,7 +646,7 @@ export default function App() {
                     {delayCountdown}
                   </motion.div>
                   
-                  <p className="text-gray-700 font-medium text-lg">🎯 Get ready to select the sounds!</p>
+                  <p className="text-gray-700 font-medium text-lg">🎯 {t('game.delayMessage')}</p>
                 </Card>
               </motion.div>
             )}
@@ -579,10 +661,10 @@ export default function App() {
               >
                 <Card className="p-6 bg-white shadow-xl border-2 border-blue-300 rounded-3xl">
                   <h2 className="text-xl mb-2 text-center font-bold text-blue-900">
-                    🎯 Which 3 sounds did you hear?
+                    🎯 {t('game.selectionTitle')}
                   </h2>
                   <p className="text-sm text-gray-700 text-center mb-6 font-medium">
-                    👆 Tap exactly 3 sounds • Selected: <span className="text-blue-600 font-bold">{selectedSounds.size}/3</span>
+                    {t('game.selectionInstruction', { count: selectedSounds.size })}
                   </p>
                   
                   <div className="grid grid-cols-2 gap-4 mb-6">
@@ -613,7 +695,7 @@ export default function App() {
                     className="w-full bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-300 font-bold text-lg shadow-lg hover:shadow-xl transition-all"
                     size="lg"
                   >
-                    ✅ Submit Answer ({selectedSounds.size}/3)
+                    ✅ {t('game.submitButton', { count: selectedSounds.size })}
                   </Button>
                 </Card>
               </motion.div>
@@ -645,13 +727,13 @@ export default function App() {
                   </motion.div>
                   
                   <h2 className="text-3xl mb-4 font-bold text-gray-900">
-                    {isCorrect ? '🎉 Excellent!' : '💪 Good Try!'}
+                    {isCorrect ? `🎉 ${t('game.excellent')}` : `💪 ${t('game.goodTry')}`}
                   </h2>
                   
                   <div className="space-y-3 mb-6">
                     <div className="flex justify-center items-center space-x-4">
                       <Badge variant={isCorrect ? "default" : "secondary"} className={`px-6 py-3 text-lg font-bold ${isCorrect ? 'bg-green-100 text-green-800 border-2 border-green-600' : 'bg-red-100 text-red-800 border-2 border-red-600'}`}>
-                        {isCorrect ? '✨ 100%' : `📊 ${(calculatePartialAccuracy() * 100).toFixed(0)}%`} Accuracy
+                        {isCorrect ? '✨ 100%' : `📊 ${(calculatePartialAccuracy() * 100).toFixed(0)}%`} {t('game.accuracy')}
                       </Badge>
                       <Badge variant="outline" className="px-6 py-3 border-2 border-blue-400 text-blue-700 font-bold text-lg">
                         ⏱️ {(reactionTime / 1000).toFixed(1)}s
@@ -660,14 +742,14 @@ export default function App() {
                     
                     <div className="text-sm text-gray-700 bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
                       <p className="mb-2 font-bold text-base">
-                        ✅ Correct: <span className="text-2xl">{targetSounds.map(s => s.icon).join(' ')}</span>
+                        ✅ {t('game.correct')} <span className="text-2xl">{targetSounds.map(s => s.icon).join(' ')}</span>
                       </p>
                       <p className="text-gray-600 text-xs">
-                        ({targetSounds.map(s => s.name).join(', ')})
+                        ({targetSounds.map(s => t(`game.sounds.${s.soundType === 'dog' ? 'dogBark' : s.soundType === 'bell' ? 'bellRing' : s.soundType === 'water' ? 'waterDrop' : s.soundType === 'bird' ? 'birdChirp' : s.soundType === 'horn' ? 'carHorn' : 'phoneRing'}`)).join(', ')})
                       </p>
                       {!isCorrect && (
                         <p className="text-gray-700 mt-3 font-medium">
-                          Your selection: <span className="text-2xl">{[...selectedSounds].map(id => 
+                          {t('game.yourSelection')} <span className="text-2xl">{[...selectedSounds].map(id => 
                             GAME_SOUNDS.find(s => s.id === id)?.icon
                           ).join(' ') || 'None'}</span>
                         </p>
@@ -681,7 +763,7 @@ export default function App() {
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all"
                   >
                     <Settings className="w-6 h-6 mr-2" />
-                    🏠 Return to Operator
+                    🏠 {t('game.returnButton')}
                   </Button>
                 </Card>
               </motion.div>
