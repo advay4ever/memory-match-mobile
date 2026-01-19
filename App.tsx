@@ -489,9 +489,31 @@ export default function App() {
     const sound = targetSounds[currentSoundIndex];
     playSound(sound.soundType);
     
+    // Sound duration estimates (in ms) + 1 second gap
+    const soundDurations: Record<string, number> = {
+      dog: 2000,
+      bell: 2500,
+      water: 1500,
+      bird: 3000,
+      horn: 2000,
+      phone: 3000,
+      cat: 2000,
+      thunder: 4000,
+      cow: 2500,
+      clock: 3000,
+      door: 2000,
+      clap: 2000,
+      baby: 3000,
+      fire: 3000,
+      rooster: 3000
+    };
+    
+    // Wait for sound to finish + 1 second gap
+    const duration = soundDurations[sound.soundType] || 3000;
+    
     setTimeout(() => {
       setCurrentSoundIndex(prev => prev + 1);
-    }, 1500); // 1.5 seconds between sounds
+    }, duration + 1000); // Sound duration + 1 second gap
   }, [gamePhase, currentSoundIndex, targetSounds, playSound]);
 
   useEffect(() => {
