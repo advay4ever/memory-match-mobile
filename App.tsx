@@ -136,6 +136,7 @@ export default function App() {
     const audio = new Audio(`${import.meta.env.BASE_URL}sounds/dog-bark-419014.mp3`);
     audio.preload = 'auto';
     audio.volume = 0.5;
+    audio.load(); // Force load on iOS
     return audio;
   }, []);
 
@@ -144,6 +145,7 @@ export default function App() {
     const audio = new Audio(`${import.meta.env.BASE_URL}sounds/car-horn-352443.mp3`);
     audio.preload = 'auto';
     audio.volume = 0.5;
+    audio.load();
     return audio;
   }, []);
 
@@ -152,6 +154,7 @@ export default function App() {
     const audio = new Audio(`${import.meta.env.BASE_URL}sounds/bird-chirping-428659.mp3`);
     audio.preload = 'auto';
     audio.volume = 0.5;
+    audio.load();
     return audio;
   }, []);
 
@@ -160,6 +163,7 @@ export default function App() {
     const audio = new Audio(`${import.meta.env.BASE_URL}sounds/bell-ring-199839.mp3`);
     audio.preload = 'auto';
     audio.volume = 0.5;
+    audio.load();
     return audio;
   }, []);
 
@@ -168,6 +172,7 @@ export default function App() {
     const audio = new Audio(`${import.meta.env.BASE_URL}sounds/water-droplet-165637.mp3`);
     audio.preload = 'auto';
     audio.volume = 0.5;
+    audio.load();
     return audio;
   }, []);
 
@@ -177,6 +182,7 @@ export default function App() {
     const audio = new Audio(soundPath);
     audio.preload = 'auto';
     audio.volume = 0.5;
+    audio.load();
     audio.onerror = (e) => console.error('Error loading phone ring audio:', e);
     return audio;
   }, []);
@@ -186,6 +192,7 @@ export default function App() {
     const audio = new Audio(`${import.meta.env.BASE_URL}sounds/cat-meow-401729.mp3`);
     audio.preload = 'auto';
     audio.volume = 0.5;
+    audio.load();
     return audio;
   }, []);
 
@@ -194,6 +201,7 @@ export default function App() {
     const audio = new Audio(`${import.meta.env.BASE_URL}sounds/loud-thunder-192165-[AudioTrimmer.com].mp3`);
     audio.preload = 'auto';
     audio.volume = 0.5;
+    audio.load();
     return audio;
   }, []);
 
@@ -202,6 +210,7 @@ export default function App() {
     const audio = new Audio(`${import.meta.env.BASE_URL}sounds/cow-mooing-343423.mp3`);
     audio.preload = 'auto';
     audio.volume = 0.5;
+    audio.load();
     return audio;
   }, []);
 
@@ -210,6 +219,7 @@ export default function App() {
     const audio = new Audio(`${import.meta.env.BASE_URL}sounds/clock-ticking-down-376897 (1)-[AudioTrimmer.com].mp3`);
     audio.preload = 'auto';
     audio.volume = 0.5;
+    audio.load();
     return audio;
   }, []);
 
@@ -218,6 +228,7 @@ export default function App() {
     const audio = new Audio(`${import.meta.env.BASE_URL}sounds/knocking-on-door-6022-[AudioTrimmer.com].mp3`);
     audio.preload = 'auto';
     audio.volume = 0.5;
+    audio.load();
     return audio;
   }, []);
 
@@ -226,6 +237,7 @@ export default function App() {
     const audio = new Audio(`${import.meta.env.BASE_URL}sounds/hand-clap-106596-[AudioTrimmer.com].mp3`);
     audio.preload = 'auto';
     audio.volume = 0.5;
+    audio.load();
     return audio;
   }, []);
 
@@ -234,6 +246,7 @@ export default function App() {
     const audio = new Audio(`${import.meta.env.BASE_URL}sounds/baby-crying-463213-[AudioTrimmer.com].mp3`);
     audio.preload = 'auto';
     audio.volume = 0.5;
+    audio.load();
     return audio;
   }, []);
 
@@ -242,6 +255,7 @@ export default function App() {
     const audio = new Audio(`${import.meta.env.BASE_URL}sounds/free-fire-crackling-427409-[AudioTrimmer.com].mp3`);
     audio.preload = 'auto';
     audio.volume = 0.5;
+    audio.load();
     return audio;
   }, []);
 
@@ -250,70 +264,89 @@ export default function App() {
     const audio = new Audio(`${import.meta.env.BASE_URL}sounds/rooster-crowing-364473.mp3`);
     audio.preload = 'auto';
     audio.volume = 0.5;
+    audio.load();
     return audio;
   }, []);
 
+  // Map of all audio elements for iOS unlock
+  const allAudioElements = useMemo(() => [
+    dogBarkAudio, carHornAudio, birdChirpAudio, bellRingAudio, waterDropAudio,
+    phoneRingAudio, catMeowAudio, thunderAudio, cowMooAudio, clockTickAudio,
+    doorKnockAudio, clappingAudio, babyCryAudio, fireCracklingAudio, roosterAudio
+  ], [dogBarkAudio, carHornAudio, birdChirpAudio, bellRingAudio, waterDropAudio,
+      phoneRingAudio, catMeowAudio, thunderAudio, cowMooAudio, clockTickAudio,
+      doorKnockAudio, clappingAudio, babyCryAudio, fireCracklingAudio, roosterAudio]);
+
+  // Unlock all audio for iOS - must be called on user gesture
+  const unlockAudioForIOS = useCallback(() => {
+    // Resume AudioContext if suspended
+    if (audioContext && audioContext.state === 'suspended') {
+      audioContext.resume();
+    }
+    
+    // Play and immediately pause each audio to "unlock" it on iOS
+    allAudioElements.forEach(audio => {
+      audio.muted = true;
+      audio.play().then(() => {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.muted = false;
+      }).catch(() => {
+        // Ignore errors during unlock
+      });
+    });
+  }, [audioContext, allAudioElements]);
+
   const createDogBark = useCallback(() => {
-    // Play the real dog bark MP3 file
+    // Reset and play - don't clone on iOS
     try {
-      // Clone the audio to allow overlapping plays
-      const audio = dogBarkAudio.cloneNode(true) as HTMLAudioElement;
-      audio.play().catch(err => console.error('Error playing dog bark:', err));
+      dogBarkAudio.currentTime = 0;
+      dogBarkAudio.play().catch(err => console.error('Error playing dog bark:', err));
     } catch (err) {
       console.error('Error creating dog bark audio:', err);
     }
   }, [dogBarkAudio]);
 
   const createBellRing = useCallback(() => {
-    // Play the real bell ring MP3 file
     try {
-      // Clone the audio to allow overlapping plays
-      const audio = bellRingAudio.cloneNode(true) as HTMLAudioElement;
-      audio.play().catch(err => console.error('Error playing bell ring:', err));
+      bellRingAudio.currentTime = 0;
+      bellRingAudio.play().catch(err => console.error('Error playing bell ring:', err));
     } catch (err) {
       console.error('Error creating bell ring audio:', err);
     }
   }, [bellRingAudio]);
 
   const createWaterDrop = useCallback(() => {
-    // Play the real water droplet MP3 file
     try {
-      // Clone the audio to allow overlapping plays
-      const audio = waterDropAudio.cloneNode(true) as HTMLAudioElement;
-      audio.play().catch(err => console.error('Error playing water drop:', err));
+      waterDropAudio.currentTime = 0;
+      waterDropAudio.play().catch(err => console.error('Error playing water drop:', err));
     } catch (err) {
       console.error('Error creating water drop audio:', err);
     }
   }, [waterDropAudio]);
 
   const createBirdChirp = useCallback(() => {
-    // Play the real bird chirping MP3 file
     try {
-      // Clone the audio to allow overlapping plays
-      const audio = birdChirpAudio.cloneNode(true) as HTMLAudioElement;
-      audio.play().catch(err => console.error('Error playing bird chirp:', err));
+      birdChirpAudio.currentTime = 0;
+      birdChirpAudio.play().catch(err => console.error('Error playing bird chirp:', err));
     } catch (err) {
       console.error('Error creating bird chirp audio:', err);
     }
   }, [birdChirpAudio]);
 
   const createCarHorn = useCallback(() => {
-    // Play the real car horn MP3 file
     try {
-      // Clone the audio to allow overlapping plays
-      const audio = carHornAudio.cloneNode(true) as HTMLAudioElement;
-      audio.play().catch(err => console.error('Error playing car horn:', err));
+      carHornAudio.currentTime = 0;
+      carHornAudio.play().catch(err => console.error('Error playing car horn:', err));
     } catch (err) {
       console.error('Error creating car horn audio:', err);
     }
   }, [carHornAudio]);
 
   const createPhoneRing = useCallback(() => {
-    // Play the real phone ring MP3 file
     try {
-      // Clone the audio to allow overlapping plays
-      const audio = phoneRingAudio.cloneNode(true) as HTMLAudioElement;
-      audio.play().catch(err => console.error('Error playing phone ring:', err));
+      phoneRingAudio.currentTime = 0;
+      phoneRingAudio.play().catch(err => console.error('Error playing phone ring:', err));
     } catch (err) {
       console.error('Error creating phone ring audio:', err);
     }
@@ -321,8 +354,8 @@ export default function App() {
 
   const createCatMeow = useCallback(() => {
     try {
-      const audio = catMeowAudio.cloneNode(true) as HTMLAudioElement;
-      audio.play().catch(err => console.error('Error playing cat meow:', err));
+      catMeowAudio.currentTime = 0;
+      catMeowAudio.play().catch(err => console.error('Error playing cat meow:', err));
     } catch (err) {
       console.error('Error creating cat meow audio:', err);
     }
@@ -330,8 +363,8 @@ export default function App() {
 
   const createThunder = useCallback(() => {
     try {
-      const audio = thunderAudio.cloneNode(true) as HTMLAudioElement;
-      audio.play().catch(err => console.error('Error playing thunder:', err));
+      thunderAudio.currentTime = 0;
+      thunderAudio.play().catch(err => console.error('Error playing thunder:', err));
     } catch (err) {
       console.error('Error creating thunder audio:', err);
     }
@@ -339,8 +372,8 @@ export default function App() {
 
   const createCowMoo = useCallback(() => {
     try {
-      const audio = cowMooAudio.cloneNode(true) as HTMLAudioElement;
-      audio.play().catch(err => console.error('Error playing cow moo:', err));
+      cowMooAudio.currentTime = 0;
+      cowMooAudio.play().catch(err => console.error('Error playing cow moo:', err));
     } catch (err) {
       console.error('Error creating cow moo audio:', err);
     }
@@ -348,8 +381,8 @@ export default function App() {
 
   const createClockTick = useCallback(() => {
     try {
-      const audio = clockTickAudio.cloneNode(true) as HTMLAudioElement;
-      audio.play().catch(err => console.error('Error playing clock tick:', err));
+      clockTickAudio.currentTime = 0;
+      clockTickAudio.play().catch(err => console.error('Error playing clock tick:', err));
     } catch (err) {
       console.error('Error creating clock tick audio:', err);
     }
@@ -357,8 +390,8 @@ export default function App() {
 
   const createDoorKnock = useCallback(() => {
     try {
-      const audio = doorKnockAudio.cloneNode(true) as HTMLAudioElement;
-      audio.play().catch(err => console.error('Error playing door knock:', err));
+      doorKnockAudio.currentTime = 0;
+      doorKnockAudio.play().catch(err => console.error('Error playing door knock:', err));
     } catch (err) {
       console.error('Error creating door knock audio:', err);
     }
@@ -366,8 +399,8 @@ export default function App() {
 
   const createClapping = useCallback(() => {
     try {
-      const audio = clappingAudio.cloneNode(true) as HTMLAudioElement;
-      audio.play().catch(err => console.error('Error playing clapping:', err));
+      clappingAudio.currentTime = 0;
+      clappingAudio.play().catch(err => console.error('Error playing clapping:', err));
     } catch (err) {
       console.error('Error creating clapping audio:', err);
     }
@@ -375,8 +408,8 @@ export default function App() {
 
   const createBabyCry = useCallback(() => {
     try {
-      const audio = babyCryAudio.cloneNode(true) as HTMLAudioElement;
-      audio.play().catch(err => console.error('Error playing baby cry:', err));
+      babyCryAudio.currentTime = 0;
+      babyCryAudio.play().catch(err => console.error('Error playing baby cry:', err));
     } catch (err) {
       console.error('Error creating baby cry audio:', err);
     }
@@ -384,8 +417,8 @@ export default function App() {
 
   const createFireCrackling = useCallback(() => {
     try {
-      const audio = fireCracklingAudio.cloneNode(true) as HTMLAudioElement;
-      audio.play().catch(err => console.error('Error playing fire crackling:', err));
+      fireCracklingAudio.currentTime = 0;
+      fireCracklingAudio.play().catch(err => console.error('Error playing fire crackling:', err));
     } catch (err) {
       console.error('Error creating fire crackling audio:', err);
     }
@@ -393,8 +426,8 @@ export default function App() {
 
   const createRooster = useCallback(() => {
     try {
-      const audio = roosterAudio.cloneNode(true) as HTMLAudioElement;
-      audio.play().catch(err => console.error('Error playing rooster:', err));
+      roosterAudio.currentTime = 0;
+      roosterAudio.play().catch(err => console.error('Error playing rooster:', err));
     } catch (err) {
       console.error('Error creating rooster audio:', err);
     }
@@ -453,6 +486,9 @@ export default function App() {
   }, [audioContext, createDogBark, createBellRing, createWaterDrop, createBirdChirp, createCarHorn, createPhoneRing, createCatMeow, createThunder, createCowMoo, createClockTick, createDoorKnock, createClapping, createBabyCry, createFireCrackling, createRooster]);
 
   const startGame = () => {
+    // Unlock audio for iOS on user gesture
+    unlockAudioForIOS();
+    
     // Always select exactly 3 sounds as per requirements
     const shuffled = [...GAME_SOUNDS].sort(() => Math.random() - 0.5);
     const selected = shuffled.slice(0, 3);
