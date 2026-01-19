@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>i18n Test</title>
+  <script type="module">
+    import i18n from './i18n.ts';
+    
+    // Wait for i18n to initialize
+    i18n.on('initialized', () => {
+      console.log('i18n initialized!');
+      console.log('Current language:', i18n.language);
+      console.log('landing.title:', i18n.t('landing.title'));
+      console.log('landing.subtitle:', i18n.t('landing.subtitle'));
+      console.log('game.setupTitle:', i18n.t('game.setupTitle'));
+      
+      document.getElementById('output').innerHTML = `
+        <h2>${i18n.t('landing.title')}</h2>
+        <p>${i18n.t('landing.subtitle')}</p>
+        <p>${i18n.t('game.setupTitle')}</p>
+      `;
+    });
+  </script>
+</head>
+<body>
+  <h1>Testing i18n</h1>
+  <div id="output">Loading translations...</div>
+</body>
+</html>

@@ -105,7 +105,7 @@ export function LanguageSelector() {
         className="rounded-full bg-blue-700 hover:bg-blue-800 text-white shadow-2xl hover:shadow-2xl transition-all px-10 py-8 border-4 border-gray-900 ring-4 ring-blue-300 ring-opacity-50 animate-pulse focus:outline-none focus:ring-4 focus:ring-blue-500"
       >
         <div className="flex items-center gap-3">
-          <span className="text-2xl font-black w-12 text-center bg-white text-blue-700 rounded-lg px-2 py-1">
+          <span className="text-2xl font-black w-14 flex items-center justify-center bg-white text-blue-700 rounded-lg px-2 py-1">
             {currentLanguage.code.toUpperCase()}
           </span>
           <span className="font-bold text-2xl">{currentLanguage.name}</span>
@@ -141,7 +141,7 @@ export function LanguageSelector() {
                 currentLanguage.code === lang.code ? 'bg-blue-100 border-l-4 border-blue-600' : ''
               } ${focusedIndex === index ? 'bg-blue-50' : ''}`}
             >
-              <span className="text-2xl font-black w-12 text-center bg-gray-100 text-gray-700 rounded px-2 py-1">
+              <span className="text-2xl font-black w-14 flex items-center justify-center bg-gray-100 text-gray-700 rounded px-2 py-1">
                 {lang.code.toUpperCase()}
               </span>
               <span className="text-xl">{lang.name}</span>

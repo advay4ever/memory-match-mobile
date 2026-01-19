@@ -17,7 +17,7 @@ interface Sound {
   name: string;
   icon: string;
   description: string;
-  soundType: 'dog' | 'bell' | 'water' | 'bird' | 'horn' | 'phone';
+  soundType: 'dog' | 'bell' | 'water' | 'bird' | 'horn' | 'phone' | 'cat' | 'thunder' | 'cow' | 'clock' | 'door' | 'clap' | 'baby' | 'fire' | 'rooster';
 }
 
 export default function App() {
@@ -26,20 +26,29 @@ export default function App() {
   // Define sounds with useMemo so they update when language changes
   const GAME_SOUNDS: Sound[] = useMemo(() => [
     { id: 1, name: t('game.sounds.dogBark'), icon: '🐕', description: 'Woof woof', soundType: 'dog' },
-    { id: 2, name: t('game.sounds.bell'), icon: '🔔', description: 'Ding dong', soundType: 'bell' },
-    { id: 3, name: t('game.sounds.doorbell'), icon: '🚪', description: 'Ding dong', soundType: 'water' },
-    { id: 4, name: t('game.sounds.glassBreak'), icon: '🪟', description: 'Crash', soundType: 'bird' },
+    { id: 2, name: t('game.sounds.bellRing'), icon: '🔔', description: 'Ding dong', soundType: 'bell' },
+    { id: 3, name: t('game.sounds.waterDrop'), icon: '💧', description: 'Drip drop', soundType: 'water' },
+    { id: 4, name: t('game.sounds.birdChirp'), icon: '🐦', description: 'Tweet tweet', soundType: 'bird' },
     { id: 5, name: t('game.sounds.carHorn'), icon: '🚗', description: 'Beep beep', soundType: 'horn' },
     { id: 6, name: t('game.sounds.phoneRing'), icon: '📞', description: 'Ring ring', soundType: 'phone' },
+    { id: 7, name: t('game.sounds.catMeow'), icon: '🐱', description: 'Meow meow', soundType: 'cat' },
+    { id: 8, name: t('game.sounds.thunder'), icon: '⛈️', description: 'Rumble', soundType: 'thunder' },
+    { id: 9, name: t('game.sounds.cowMoo'), icon: '🐄', description: 'Moo moo', soundType: 'cow' },
+    { id: 10, name: t('game.sounds.clockTick'), icon: '🕐', description: 'Tick tock', soundType: 'clock' },
+    { id: 11, name: t('game.sounds.doorKnock'), icon: '🚪', description: 'Knock knock', soundType: 'door' },
+    { id: 12, name: t('game.sounds.clapping'), icon: '👏', description: 'Clap clap', soundType: 'clap' },
+    { id: 13, name: t('game.sounds.babyCry'), icon: '👶', description: 'Wah wah', soundType: 'baby' },
+    { id: 14, name: t('game.sounds.fireCrackling'), icon: '🔥', description: 'Crackle', soundType: 'fire' },
+    { id: 15, name: t('game.sounds.rooster'), icon: '🐓', description: 'Cock-a-doodle', soundType: 'rooster' },
   ], [t, i18n.language]);
   
   const [showLanding, setShowLanding] = useState(true);
   const [gamePhase, setGamePhase] = useState<GamePhase>('setup');
   const [userRole, setUserRole] = useState<UserRole>('operator');
   const [targetSounds, setTargetSounds] = useState<Sound[]>([]);
+  const [displaySounds, setDisplaySounds] = useState<Sound[]>([]); // 6 sounds shown during selection (3 correct + 3 distractors)
   const [selectedSounds, setSelectedSounds] = useState<Set<number>>(new Set());
   const [currentSoundIndex, setCurrentSoundIndex] = useState(0);
-  const [sessionNumber, setSessionNumber] = useState(1);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [delayCountdown, setDelayCountdown] = useState(8); // 8 seconds delay
   const [gameStartTime, setGameStartTime] = useState<number>(0);
@@ -49,6 +58,12 @@ export default function App() {
   const [showLangSelector, setShowLangSelector] = useState(false);
   
   const dataManager = useRef(DataManager.getInstance());
+  
+  // Initialize session number from stored data (next session = stored count + 1)
+  const [sessionNumber, setSessionNumber] = useState(() => {
+    const storedSessions = DataManager.getInstance().getAllSessions();
+    return storedSessions.length + 1;
+  });
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -96,7 +111,7 @@ export default function App() {
     };
   }, [showLangSelector]);
 
-  // Update target sounds when language changes (if game is in progress)
+  // Update target sounds and display sounds when language changes (if game is in progress)
   useEffect(() => {
     if (targetSounds.length > 0) {
       // Map the current target sounds to their new translated versions
@@ -105,6 +120,14 @@ export default function App() {
         return newSound || oldSound;
       });
       setTargetSounds(updatedTargets);
+    }
+    if (displaySounds.length > 0) {
+      // Map the current display sounds to their new translated versions
+      const updatedDisplay = displaySounds.map(oldSound => {
+        const newSound = GAME_SOUNDS.find(s => s.id === oldSound.id);
+        return newSound || oldSound;
+      });
+      setDisplaySounds(updatedDisplay);
     }
   }, [i18n.language, GAME_SOUNDS]);
 
@@ -155,6 +178,78 @@ export default function App() {
     audio.preload = 'auto';
     audio.volume = 0.5;
     audio.onerror = (e) => console.error('Error loading phone ring audio:', e);
+    return audio;
+  }, []);
+
+  // Preload cat meow audio
+  const catMeowAudio = useMemo(() => {
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/cat-meow-401729.mp3`);
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    return audio;
+  }, []);
+
+  // Preload thunder audio
+  const thunderAudio = useMemo(() => {
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/loud-thunder-192165-[AudioTrimmer.com].mp3`);
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    return audio;
+  }, []);
+
+  // Preload cow moo audio
+  const cowMooAudio = useMemo(() => {
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/cow-mooing-343423.mp3`);
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    return audio;
+  }, []);
+
+  // Preload clock tick audio
+  const clockTickAudio = useMemo(() => {
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/clock-ticking-down-376897 (1)-[AudioTrimmer.com].mp3`);
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    return audio;
+  }, []);
+
+  // Preload door knock audio
+  const doorKnockAudio = useMemo(() => {
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/knocking-on-door-6022-[AudioTrimmer.com].mp3`);
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    return audio;
+  }, []);
+
+  // Preload clapping audio
+  const clappingAudio = useMemo(() => {
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/hand-clap-106596-[AudioTrimmer.com].mp3`);
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    return audio;
+  }, []);
+
+  // Preload baby cry audio
+  const babyCryAudio = useMemo(() => {
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/baby-crying-463213-[AudioTrimmer.com].mp3`);
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    return audio;
+  }, []);
+
+  // Preload fire crackling audio
+  const fireCracklingAudio = useMemo(() => {
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/free-fire-crackling-427409-[AudioTrimmer.com].mp3`);
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    return audio;
+  }, []);
+
+  // Preload rooster audio
+  const roosterAudio = useMemo(() => {
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/rooster-crowing-364473.mp3`);
+    audio.preload = 'auto';
+    audio.volume = 0.5;
     return audio;
   }, []);
 
@@ -224,6 +319,87 @@ export default function App() {
     }
   }, [phoneRingAudio]);
 
+  const createCatMeow = useCallback(() => {
+    try {
+      const audio = catMeowAudio.cloneNode(true) as HTMLAudioElement;
+      audio.play().catch(err => console.error('Error playing cat meow:', err));
+    } catch (err) {
+      console.error('Error creating cat meow audio:', err);
+    }
+  }, [catMeowAudio]);
+
+  const createThunder = useCallback(() => {
+    try {
+      const audio = thunderAudio.cloneNode(true) as HTMLAudioElement;
+      audio.play().catch(err => console.error('Error playing thunder:', err));
+    } catch (err) {
+      console.error('Error creating thunder audio:', err);
+    }
+  }, [thunderAudio]);
+
+  const createCowMoo = useCallback(() => {
+    try {
+      const audio = cowMooAudio.cloneNode(true) as HTMLAudioElement;
+      audio.play().catch(err => console.error('Error playing cow moo:', err));
+    } catch (err) {
+      console.error('Error creating cow moo audio:', err);
+    }
+  }, [cowMooAudio]);
+
+  const createClockTick = useCallback(() => {
+    try {
+      const audio = clockTickAudio.cloneNode(true) as HTMLAudioElement;
+      audio.play().catch(err => console.error('Error playing clock tick:', err));
+    } catch (err) {
+      console.error('Error creating clock tick audio:', err);
+    }
+  }, [clockTickAudio]);
+
+  const createDoorKnock = useCallback(() => {
+    try {
+      const audio = doorKnockAudio.cloneNode(true) as HTMLAudioElement;
+      audio.play().catch(err => console.error('Error playing door knock:', err));
+    } catch (err) {
+      console.error('Error creating door knock audio:', err);
+    }
+  }, [doorKnockAudio]);
+
+  const createClapping = useCallback(() => {
+    try {
+      const audio = clappingAudio.cloneNode(true) as HTMLAudioElement;
+      audio.play().catch(err => console.error('Error playing clapping:', err));
+    } catch (err) {
+      console.error('Error creating clapping audio:', err);
+    }
+  }, [clappingAudio]);
+
+  const createBabyCry = useCallback(() => {
+    try {
+      const audio = babyCryAudio.cloneNode(true) as HTMLAudioElement;
+      audio.play().catch(err => console.error('Error playing baby cry:', err));
+    } catch (err) {
+      console.error('Error creating baby cry audio:', err);
+    }
+  }, [babyCryAudio]);
+
+  const createFireCrackling = useCallback(() => {
+    try {
+      const audio = fireCracklingAudio.cloneNode(true) as HTMLAudioElement;
+      audio.play().catch(err => console.error('Error playing fire crackling:', err));
+    } catch (err) {
+      console.error('Error creating fire crackling audio:', err);
+    }
+  }, [fireCracklingAudio]);
+
+  const createRooster = useCallback(() => {
+    try {
+      const audio = roosterAudio.cloneNode(true) as HTMLAudioElement;
+      audio.play().catch(err => console.error('Error playing rooster:', err));
+    } catch (err) {
+      console.error('Error creating rooster audio:', err);
+    }
+  }, [roosterAudio]);
+
   const playSound = useCallback((soundType: Sound['soundType']) => {
     if (!audioContext) return;
 
@@ -246,15 +422,52 @@ export default function App() {
       case 'phone':
         createPhoneRing();
         break;
+      case 'cat':
+        createCatMeow();
+        break;
+      case 'thunder':
+        createThunder();
+        break;
+      case 'cow':
+        createCowMoo();
+        break;
+      case 'clock':
+        createClockTick();
+        break;
+      case 'door':
+        createDoorKnock();
+        break;
+      case 'clap':
+        createClapping();
+        break;
+      case 'baby':
+        createBabyCry();
+        break;
+      case 'fire':
+        createFireCrackling();
+        break;
+      case 'rooster':
+        createRooster();
+        break;
     }
-  }, [audioContext, createDogBark, createBellRing, createWaterDrop, createBirdChirp, createCarHorn, createPhoneRing]);
+  }, [audioContext, createDogBark, createBellRing, createWaterDrop, createBirdChirp, createCarHorn, createPhoneRing, createCatMeow, createThunder, createCowMoo, createClockTick, createDoorKnock, createClapping, createBabyCry, createFireCrackling, createRooster]);
 
   const startGame = () => {
     // Always select exactly 3 sounds as per requirements
     const shuffled = [...GAME_SOUNDS].sort(() => Math.random() - 0.5);
     const selected = shuffled.slice(0, 3);
     
+    // Get 3 distractor sounds (sounds not in selected)
+    const selectedIds = new Set(selected.map(s => s.id));
+    const distractors = GAME_SOUNDS.filter(s => !selectedIds.has(s.id))
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 3);
+    
+    // Combine and shuffle for display (3 correct + 3 distractors = 6 total)
+    const allDisplaySounds = [...selected, ...distractors].sort(() => Math.random() - 0.5);
+    
     setTargetSounds(selected);
+    setDisplaySounds(allDisplaySounds);
     setSelectedSounds(new Set());
     setCurrentSoundIndex(0);
     setGameStartTime(Date.now());
@@ -668,7 +881,7 @@ export default function App() {
                   </p>
                   
                   <div className="grid grid-cols-2 gap-4 mb-6">
-                    {GAME_SOUNDS.map((sound) => (
+                    {displaySounds.map((sound) => (
                       <motion.button
                         key={sound.id}
                         onClick={() => handleSoundSelection(sound.id)}
@@ -745,7 +958,15 @@ export default function App() {
                         ✅ {t('game.correct')} <span className="text-2xl">{targetSounds.map(s => s.icon).join(' ')}</span>
                       </p>
                       <p className="text-gray-600 text-xs">
-                        ({targetSounds.map(s => t(`game.sounds.${s.soundType === 'dog' ? 'dogBark' : s.soundType === 'bell' ? 'bellRing' : s.soundType === 'water' ? 'waterDrop' : s.soundType === 'bird' ? 'birdChirp' : s.soundType === 'horn' ? 'carHorn' : 'phoneRing'}`)).join(', ')})
+                        ({targetSounds.map(s => {
+                          const soundKeyMap: Record<string, string> = {
+                            dog: 'dogBark', bell: 'bellRing', water: 'waterDrop', bird: 'birdChirp',
+                            horn: 'carHorn', phone: 'phoneRing', cat: 'catMeow', thunder: 'thunder',
+                            cow: 'cowMoo', clock: 'clockTick', door: 'doorKnock', clap: 'clapping',
+                            baby: 'babyCry', fire: 'fireCrackling', rooster: 'rooster'
+                          };
+                          return t(`game.sounds.${soundKeyMap[s.soundType] || s.soundType}`);
+                        }).join(', ')})
                       </p>
                       {!isCorrect && (
                         <p className="text-gray-700 mt-3 font-medium">
