@@ -2,6 +2,15 @@
   "landing": {
     "title": "Memory Match Mobile",
     "subtitle": "Cognitive Assessment Game",
+    "description1": "Memory Match Mobile is a lightweight cognitive memory game that tests auditory memory and recall. The app plays a sequence of three different sounds, then challenges users to identify which sounds they heard after a brief delay.",
+    "description2": "Designed as a lightweight application that works efficiently even in rural areas with limited internet connectivity, the app runs entirely in your browser with minimal data usage. All performance data is stored locally on your device for complete privacy, making it accessible to communities worldwide regardless of infrastructure constraints.",
+    "feature1Title": "Memory Testing",
+    "feature1Desc": "Auditory recall assessment",
+    "feature2Title": "Quick Sessions",
+    "feature2Desc": "Complete in under 2 minutes",
+    "feature3Title": "Track Progress",
+    "feature3Desc": "Monitor performance over time",
+    "disclaimer": "This is a screening tool, not a medical diagnostic device. Consult healthcare professionals for any concerns.",
     "startButton": "Start Assessment",
     "aboutLink": "About this project"
   },

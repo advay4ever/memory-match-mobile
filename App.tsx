@@ -26,9 +26,9 @@ export default function App() {
   // Define sounds with useMemo so they update when language changes
   const GAME_SOUNDS: Sound[] = useMemo(() => [
     { id: 1, name: t('game.sounds.dogBark'), icon: '🐕', description: 'Woof woof', soundType: 'dog' },
-    { id: 2, name: t('game.sounds.bellRing'), icon: '🔔', description: 'Ding dong', soundType: 'bell' },
-    { id: 3, name: t('game.sounds.waterDrop'), icon: '💧', description: 'Drip drop', soundType: 'water' },
-    { id: 4, name: t('game.sounds.birdChirp'), icon: '🐦', description: 'Tweet tweet', soundType: 'bird' },
+    { id: 2, name: t('game.sounds.bell'), icon: '🔔', description: 'Ding dong', soundType: 'bell' },
+    { id: 3, name: t('game.sounds.doorbell'), icon: '🚪', description: 'Ding dong', soundType: 'water' },
+    { id: 4, name: t('game.sounds.glassBreak'), icon: '🪟', description: 'Crash', soundType: 'bird' },
     { id: 5, name: t('game.sounds.carHorn'), icon: '🚗', description: 'Beep beep', soundType: 'horn' },
     { id: 6, name: t('game.sounds.phoneRing'), icon: '📞', description: 'Ring ring', soundType: 'phone' },
   ], [t, i18n.language]);
