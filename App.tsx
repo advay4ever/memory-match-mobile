@@ -508,12 +508,12 @@ export default function App() {
       rooster: 3000
     };
     
-    // Wait for sound to finish + 1 second gap
+    // Wait for sound to finish + 0.5 second gap
     const duration = soundDurations[sound.soundType] || 3000;
     
     setTimeout(() => {
       setCurrentSoundIndex(prev => prev + 1);
-    }, duration + 1000); // Sound duration + 1 second gap
+    }, duration + 500); // Sound duration + 0.5 second gap
   }, [gamePhase, currentSoundIndex, targetSounds, playSound]);
 
   useEffect(() => {
