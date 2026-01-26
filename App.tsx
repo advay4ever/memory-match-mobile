@@ -11,6 +11,71 @@ import { useTranslation } from 'react-i18next';
 
 type GamePhase = 'setup' | 'instructions' | 'listen' | 'delay' | 'selection' | 'feedback' | 'results';
 type UserRole = 'operator' | 'patient';
+type DifficultyLevel = 'easy' | 'medium' | 'hard';
+type ConfidenceLevel = 'normal' | 'monitor' | 'concern';
+
+// Difficulty configuration: sounds to remember and distractors
+const DIFFICULTY_CONFIG = {
+  easy: { soundsToRemember: 3, distractors: 3, totalDisplay: 6 },
+  medium: { soundsToRemember: 4, distractors: 4, totalDisplay: 8 },
+  hard: { soundsToRemember: 6, distractors: 6, totalDisplay: 12 }
+};
+
+// Age-adjusted scoring thresholds
+// Format: { normal: minForNormal, monitor: minForMonitor } (below monitor = concern)
+const SCORING_THRESHOLDS: Record<string, Record<DifficultyLevel, { normal: number; monitor: number }>> = {
+  'child': {      // Under 12
+    easy: { normal: 80, monitor: 60 },
+    medium: { normal: 70, monitor: 50 },
+    hard: { normal: 60, monitor: 40 }
+  },
+  'adult': {      // 12-49
+    easy: { normal: 90, monitor: 70 },
+    medium: { normal: 80, monitor: 60 },
+    hard: { normal: 70, monitor: 50 }
+  },
+  'older': {      // 50-64
+    easy: { normal: 85, monitor: 65 },
+    medium: { normal: 75, monitor: 55 },
+    hard: { normal: 65, monitor: 45 }
+  },
+  'senior': {     // 65+
+    easy: { normal: 75, monitor: 55 },
+    medium: { normal: 65, monitor: 45 },
+    hard: { normal: 55, monitor: 35 }
+  }
+};
+
+// Helper function to get age group from age
+function getAgeGroup(age: number | null): string {
+  if (age === null) return 'adult'; // Default to adult thresholds if no age provided
+  if (age < 12) return 'child';
+  if (age < 50) return 'adult';
+  if (age < 65) return 'older';
+  return 'senior';
+}
+
+// Get confidence level based on accuracy, age, and difficulty
+function getConfidenceLevel(accuracy: number, age: number | null, difficulty: DifficultyLevel): ConfidenceLevel {
+  const ageGroup = getAgeGroup(age);
+  const thresholds = SCORING_THRESHOLDS[ageGroup][difficulty];
+  
+  if (accuracy >= thresholds.normal) return 'normal';
+  if (accuracy >= thresholds.monitor) return 'monitor';
+  return 'concern';
+}
+
+// Get confidence level display info
+function getConfidenceDisplay(level: ConfidenceLevel): { emoji: string; colorClass: string } {
+  switch (level) {
+    case 'normal':
+      return { emoji: '🟢', colorClass: 'text-green-600' };
+    case 'monitor':
+      return { emoji: '🟡', colorClass: 'text-yellow-600' };
+    case 'concern':
+      return { emoji: '🔴', colorClass: 'text-red-600' };
+  }
+}
 
 interface Sound {
   id: number;
@@ -56,6 +121,17 @@ export default function App() {
   const [reactionTime, setReactionTime] = useState<number>(0);
   const [showAlert, setShowAlert] = useState(false);
   const [showLangSelector, setShowLangSelector] = useState(false);
+  const [participantName, setParticipantName] = useState('');
+  const [showNameInput, setShowNameInput] = useState(false);
+  const [showPatientChoice, setShowPatientChoice] = useState(false);
+  const [showAllSessions, setShowAllSessions] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [selectedPatientFilter, setSelectedPatientFilter] = useState<string | null>(null);
+  const [patientSearchText, setPatientSearchText] = useState('');
+  const [attemptNumber, setAttemptNumber] = useState(1);
+  const [participantAge, setParticipantAge] = useState<number | null>(null);
+  const [difficulty, setDifficulty] = useState<DifficultyLevel>('medium');
+  const [showDifficultySelector, setShowDifficultySelector] = useState(false);
   
   const dataManager = useRef(DataManager.getInstance());
   
@@ -75,6 +151,12 @@ export default function App() {
     { code: 'bn', name: 'বাংলা', flag: '🇧🇩' },
     { code: 'pt', name: 'Português', flag: '🇧🇷' },
     { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+    { code: 'ja', name: '日本語', flag: '🇯🇵' },
+    { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+    { code: 'am', name: 'አማርኛ', flag: '🇪🇹' },
+    { code: 'ha', name: 'Hausa', flag: '🇳🇬' },
+    { code: 'sw', name: 'Kiswahili', flag: '🇰🇪' },
+    { code: 'yo', name: 'Yorùbá', flag: '🇳🇬' },
   ];
 
   const currentLang = languages.find(lang => lang.code === i18n.language) || languages[0];
@@ -485,21 +567,80 @@ export default function App() {
     }
   }, [audioContext, createDogBark, createBellRing, createWaterDrop, createBirdChirp, createCarHorn, createPhoneRing, createCatMeow, createThunder, createCowMoo, createClockTick, createDoorKnock, createClapping, createBabyCry, createFireCrackling, createRooster]);
 
-  const startGame = () => {
+  const handleStartTestClick = () => {
+    // If we already have a participant name, show the choice dialog
+    if (participantName) {
+      setShowPatientChoice(true);
+    } else {
+      // First time - show name input
+      setShowNameInput(true);
+    }
+  };
+
+  const handleSamePatient = () => {
+    // Continue with the same participant, increment attempt number
+    const attempt = dataManager.current.getNextAttemptNumber(participantName);
+    setAttemptNumber(attempt);
+    setShowPatientChoice(false);
+    // Show difficulty selector instead of starting directly
+    setShowDifficultySelector(true);
+  };
+
+  const handleDifferentPatient = () => {
+    setShowPatientChoice(false);
+    setParticipantAge(null); // Reset age for new patient
+    setShowNameInput(true);
+  };
+
+  // Get suggested difficulty based on age
+  // Easy: Children (<12) and Seniors (65+)
+  // Medium: Adolescents (12-17) and Older Adults (50-64)
+  // Hard: Adults (18-49)
+  const getSuggestedDifficulty = (age: number | null): DifficultyLevel => {
+    if (age === null) return 'medium';
+    if (age < 12) return 'easy';      // Children
+    if (age >= 65) return 'easy';     // Seniors
+    if (age < 18) return 'medium';    // Adolescents
+    if (age >= 50) return 'medium';   // Older adults
+    return 'hard';                     // Adults 18-49
+  };
+
+  const handleNameSubmit = (name: string, age: number | null) => {
+    const trimmedName = name.trim() || 'Anonymous';
+    setParticipantName(trimmedName);
+    setParticipantAge(age);
+    const attempt = dataManager.current.getNextAttemptNumber(trimmedName);
+    setAttemptNumber(attempt);
+    setShowNameInput(false);
+    // Set suggested difficulty based on age
+    setDifficulty(getSuggestedDifficulty(age));
+    // Show difficulty selector
+    setShowDifficultySelector(true);
+  };
+
+  const handleDifficultySelect = (level: DifficultyLevel) => {
+    setDifficulty(level);
+    setShowDifficultySelector(false);
+    startGame(level);
+  };
+
+  const startGame = (selectedDifficulty: DifficultyLevel = difficulty) => {
     // Unlock audio for iOS on user gesture
     unlockAudioForIOS();
     
-    // Always select exactly 3 sounds as per requirements
-    const shuffled = [...GAME_SOUNDS].sort(() => Math.random() - 0.5);
-    const selected = shuffled.slice(0, 3);
+    const config = DIFFICULTY_CONFIG[selectedDifficulty];
     
-    // Get 3 distractor sounds (sounds not in selected)
+    // Select sounds based on difficulty
+    const shuffled = [...GAME_SOUNDS].sort(() => Math.random() - 0.5);
+    const selected = shuffled.slice(0, config.soundsToRemember);
+    
+    // Get distractor sounds (sounds not in selected)
     const selectedIds = new Set(selected.map(s => s.id));
     const distractors = GAME_SOUNDS.filter(s => !selectedIds.has(s.id))
       .sort(() => Math.random() - 0.5)
-      .slice(0, 3);
+      .slice(0, config.distractors);
     
-    // Combine and shuffle for display (3 correct + 3 distractors = 6 total)
+    // Combine and shuffle for display
     const allDisplaySounds = [...selected, ...distractors].sort(() => Math.random() - 0.5);
     
     setTargetSounds(selected);
@@ -576,7 +717,7 @@ export default function App() {
     const newSelection = new Set(selectedSounds);
     if (newSelection.has(soundId)) {
       newSelection.delete(soundId);
-    } else if (newSelection.size < 3) { // Limit to 3 selections
+    } else if (newSelection.size < targetSounds.length) { // Limit based on difficulty
       newSelection.add(soundId);
     }
     setSelectedSounds(newSelection);
@@ -597,6 +738,8 @@ export default function App() {
     const sessionData: SessionData = {
       id: `session_${Date.now()}`,
       timestamp: new Date(),
+      participantName: participantName,
+      attemptNumber: attemptNumber,
       accuracy: accuracy,
       reactionTime: calculatedReactionTime,
       correctSounds: targetSounds.map(s => s.name),
@@ -604,7 +747,9 @@ export default function App() {
         GAME_SOUNDS.find(s => s.id === id)?.name || 'Unknown'
       ),
       gameNumber: sessionNumber,
-      isCorrect: isCorrect
+      isCorrect: isCorrect,
+      difficulty: difficulty,
+      participantAge: participantAge
     };
     
     dataManager.current.saveSession(sessionData);
@@ -652,24 +797,81 @@ export default function App() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <div className="p-4 bg-white border-b-2 border-gray-200 shadow-sm relative">
-        <div className="flex justify-between items-center max-w-md mx-auto">
-          <div className="flex-1">
-            <h1 className="text-xl font-bold text-gray-900">{t('game.title')} 🎮</h1>
-            <p className="text-sm text-gray-600 font-medium">
+        {/* Desktop: Absolute positioned buttons in top-right corner */}
+        <div className="hidden sm:flex absolute top-4 right-4 items-center gap-2">
+          {/* Language Selector - Desktop */}
+          <div className="relative lang-selector-container">
+            <Button
+              onClick={() => setShowLangSelector(!showLangSelector)}
+              variant="outline"
+              size="default"
+              className="border-2 border-gray-300 hover:border-blue-500 px-3 py-2"
+            >
+              <Globe className="w-5 h-5 mr-1" />
+              <span className="text-lg">{currentLang.flag}</span>
+            </Button>
+            
+            {showLangSelector && (
+              <div className="absolute right-0 mt-2 w-48 bg-white border-2 border-gray-300 rounded-lg shadow-xl z-50 max-h-64 overflow-y-auto">
+                {languages.map((lang) => (
+                  <button
+                    key={lang.code}
+                    onClick={() => {
+                      i18n.changeLanguage(lang.code);
+                      setShowLangSelector(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 hover:bg-blue-50 flex items-center gap-2 ${
+                      lang.code === i18n.language ? 'bg-blue-100 font-bold' : ''
+                    }`}
+                  >
+                    <span>{lang.flag}</span>
+                    <span className="text-sm">{lang.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          
+          {/* Home Button - Desktop */}
+          {userRole === 'operator' && (
+            <Button 
+              onClick={() => setShowLanding(true)}
+              variant="outline"
+              size="default"
+              className="border-2 border-gray-700 hover:border-blue-600 hover:bg-blue-50 text-gray-900 font-bold text-base px-4 py-2"
+            >
+              ← {t('common.home')}
+            </Button>
+          )}
+          
+          {userRole === 'patient' && (
+            <Badge variant="secondary" className="px-3 py-2 bg-blue-600 text-white border-0">
+              <Clock className="w-3 h-3 mr-1" />
+              {Math.round(reactionTime / 1000)}s
+            </Badge>
+          )}
+        </div>
+        
+        <div className="flex justify-between items-center">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl font-bold text-gray-900 truncate">{t('game.title')} 🎮</h1>
+            <p className="text-sm text-gray-600 font-medium truncate">
               {userRole === 'operator' ? `🎯 ${t('game.operatorView')}` : t('game.sessionNumber', { number: sessionNumber })}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            {/* Language Selector Button */}
+          
+          {/* Mobile: Inline buttons */}
+          <div className="flex items-center gap-2 flex-shrink-0 sm:hidden">
+            {/* Language Selector Button - Mobile */}
             <div className="relative lang-selector-container">
               <Button
                 onClick={() => setShowLangSelector(!showLangSelector)}
                 variant="outline"
-                size="sm"
-                className="border-2 border-gray-300 hover:border-blue-500 px-2 py-1"
+                size="default"
+                className="border-2 border-gray-300 hover:border-blue-500 px-3 py-2"
               >
-                <Globe className="w-4 h-4 mr-1" />
-                {currentLang.flag}
+                <Globe className="w-5 h-5 mr-1" />
+                <span className="text-lg">{currentLang.flag}</span>
               </Button>
               
               {showLangSelector && (
@@ -693,6 +895,18 @@ export default function App() {
               )}
             </div>
             
+            {/* Home Button - Mobile: Inline next to language selector */}
+            {userRole === 'operator' && (
+              <Button 
+                onClick={() => setShowLanding(true)}
+                variant="outline"
+                size="sm"
+                className="border-2 border-gray-700 hover:border-blue-600 hover:bg-blue-50 text-gray-900 font-bold px-2 py-1 text-sm"
+              >
+                ← {t('common.home')}
+              </Button>
+            )}
+            
             {userRole === 'patient' && (
               <Badge variant="secondary" className="px-3 py-2 bg-blue-600 text-white border-0">
                 <Clock className="w-3 h-3 mr-1" />
@@ -701,16 +915,6 @@ export default function App() {
             )}
           </div>
         </div>
-        {userRole === 'operator' && (
-          <Button 
-            onClick={() => setShowLanding(true)}
-            variant="outline"
-            size="default"
-            className="absolute top-4 right-4 border-2 border-gray-700 hover:border-blue-600 hover:bg-blue-50 text-gray-900 font-bold text-base px-4 py-2"
-          >
-            ← {t('common.home')}
-          </Button>
-        )}
       </div>
 
       {/* Alert Banner */}
@@ -766,7 +970,7 @@ export default function App() {
                       👨‍⚕️ {t('game.operatorInstruction')}
                     </p>
                     <Button 
-                      onClick={startGame}
+                      onClick={handleStartTestClick}
                       size="lg"
                       className="w-full bg-green-600 hover:bg-green-700 text-white font-bold text-xl py-7 shadow-lg hover:shadow-xl transition-all"
                     >
@@ -776,13 +980,18 @@ export default function App() {
                     
                     {recentSessions.length > 0 && (
                       <Button
-                        onClick={() => {
-                          if (window.confirm(t('game.clearConfirm'))) {
-                            dataManager.current.clearAllData();
-                            setSessionNumber(1);
-                            window.location.reload();
-                          }
-                        }}
+                        onClick={() => setShowAllSessions(true)}
+                        variant="outline"
+                        size="lg"
+                        className="w-full border-2 border-blue-400 text-blue-600 hover:bg-blue-50 hover:border-blue-600 font-semibold"
+                      >
+                        📊 {t('game.viewAllSessions')}
+                      </Button>
+                    )}
+                    
+                    {recentSessions.length > 0 && (
+                      <Button
+                        onClick={() => setShowClearConfirm(true)}
                         variant="outline"
                         size="lg"
                         className="w-full border-2 border-red-400 text-red-600 hover:bg-red-50 hover:border-red-600 font-semibold"
@@ -808,12 +1017,26 @@ export default function App() {
                     📋 {t('game.instructionsTitle')}
                   </h2>
                   
+                  {/* Difficulty Badge */}
+                  <div className="flex justify-center mb-4">
+                    <Badge className={`text-sm px-3 py-1 ${
+                      difficulty === 'easy' ? 'bg-green-100 text-green-800 border-green-300' :
+                      difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800 border-yellow-300' :
+                      'bg-red-100 text-red-800 border-red-300'
+                    }`}>
+                      {difficulty === 'easy' && '🟢'} 
+                      {difficulty === 'medium' && '🟡'} 
+                      {difficulty === 'hard' && '🔴'} 
+                      {' '}{t(`game.difficulty${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}`)}
+                    </Badge>
+                  </div>
+                  
                   <div className="space-y-4 mb-8">
                     <div className="flex items-center space-x-4 bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
                       <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center shadow-md">
                         <span className="text-lg text-white font-bold">1</span>
                       </div>
-                      <p className="text-gray-800 font-medium">🎵 {t('game.instruction1')}</p>
+                      <p className="text-gray-800 font-medium">🎵 {t('game.instruction1Dynamic', { count: DIFFICULTY_CONFIG[difficulty].soundsToRemember })}</p>
                     </div>
                     
                     <div className="flex items-center space-x-4 bg-green-50 p-4 rounded-xl border-2 border-green-200">
@@ -827,7 +1050,7 @@ export default function App() {
                       <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center shadow-md">
                         <span className="text-lg text-white font-bold">3</span>
                       </div>
-                      <p className="text-gray-800 font-medium">👆 {t('game.instruction3')}</p>
+                      <p className="text-gray-800 font-medium">👆 {t('game.instruction3Dynamic', { count: DIFFICULTY_CONFIG[difficulty].soundsToRemember })}</p>
                     </div>
                   </div>
                   
@@ -931,42 +1154,42 @@ export default function App() {
                 className="space-y-6"
               >
                 <Card className="p-6 bg-white shadow-xl border-2 border-blue-300 rounded-3xl">
-                  <h2 className="text-xl mb-2 text-center font-bold text-blue-900">
-                    🎯 {t('game.selectionTitle')}
+                  <h2 className="text-4xl mb-4 text-center font-bold text-blue-900">
+                    🎯 {t('game.selectionTitle', { count: targetSounds.length })}
                   </h2>
-                  <p className="text-sm text-gray-700 text-center mb-6 font-medium">
-                    {t('game.selectionInstruction', { count: selectedSounds.size })}
+                  <p className="text-xl text-gray-700 text-center mb-6 font-medium">
+                    {t('game.selectionInstruction', { count: selectedSounds.size, total: targetSounds.length })}
                   </p>
                   
-                  <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="grid grid-cols-2 gap-5 mb-6">
                     {displaySounds.map((sound) => (
                       <motion.button
                         key={sound.id}
                         onClick={() => handleSoundSelection(sound.id)}
-                        disabled={!selectedSounds.has(sound.id) && selectedSounds.size >= 3}
-                        className={`aspect-square rounded-3xl flex flex-col items-center justify-center p-4 border-4 transition-all shadow-lg ${
+                        disabled={!selectedSounds.has(sound.id) && selectedSounds.size >= targetSounds.length}
+                        className={`aspect-square rounded-3xl flex flex-col items-center justify-center p-6 border-4 transition-all shadow-lg ${
                           selectedSounds.has(sound.id)
                             ? 'bg-blue-600 border-blue-400 text-white shadow-xl scale-105'
-                            : selectedSounds.size >= 3
+                            : selectedSounds.size >= targetSounds.length
                               ? 'bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed'
                               : 'bg-white border-gray-300 text-gray-700 hover:border-blue-400 hover:shadow-xl'
                         }`}
                         whileTap={{ scale: 0.9 }}
-                        whileHover={selectedSounds.has(sound.id) || selectedSounds.size < 3 ? { scale: 1.1 } : {}}
+                        whileHover={selectedSounds.has(sound.id) || selectedSounds.size < targetSounds.length ? { scale: 1.1 } : {}}
                       >
-                        <span className="text-4xl mb-2">{sound.icon}</span>
-                        <span className="text-xs text-center font-bold">{sound.name}</span>
+                        <span className="text-7xl mb-3">{sound.icon}</span>
+                        <span className="text-lg text-center font-bold">{sound.name}</span>
                       </motion.button>
                     ))}
                   </div>
                   
                   <Button 
                     onClick={submitAnswer}
-                    disabled={selectedSounds.size !== 3}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-300 font-bold text-lg shadow-lg hover:shadow-xl transition-all"
+                    disabled={selectedSounds.size !== targetSounds.length}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white disabled:bg-gray-300 font-bold text-2xl py-6 shadow-lg hover:shadow-xl transition-all"
                     size="lg"
                   >
-                    ✅ {t('game.submitButton', { count: selectedSounds.size })}
+                    ✅ {t('game.submitButton', { count: selectedSounds.size, total: targetSounds.length })}
                   </Button>
                 </Card>
               </motion.div>
@@ -1011,6 +1234,30 @@ export default function App() {
                       </Badge>
                     </div>
                     
+                    {/* Age-Adjusted Confidence Indicator */}
+                    {(() => {
+                      const accuracy = isCorrect ? 100 : calculatePartialAccuracy() * 100;
+                      const confidenceLevel = getConfidenceLevel(accuracy, participantAge, difficulty);
+                      const { emoji, colorClass } = getConfidenceDisplay(confidenceLevel);
+                      return (
+                        <div className={`flex items-center justify-center space-x-2 p-3 rounded-xl ${
+                          confidenceLevel === 'normal' ? 'bg-green-50 border-2 border-green-200' :
+                          confidenceLevel === 'monitor' ? 'bg-yellow-50 border-2 border-yellow-200' :
+                          'bg-red-50 border-2 border-red-200'
+                        }`}>
+                          <span className="text-2xl">{emoji}</span>
+                          <span className={`font-bold ${colorClass}`}>
+                            {t(`game.confidence.${confidenceLevel}`)}
+                          </span>
+                          {participantAge && (
+                            <span className="text-sm text-gray-500">
+                              ({t('game.forAge', { age: participantAge })})
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })()}
+                    
                     <div className="text-sm text-gray-700 bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
                       <p className="mb-2 font-bold text-base">
                         ✅ {t('game.correct')} <span className="text-2xl">{targetSounds.map(s => s.icon).join(' ')}</span>
@@ -1050,6 +1297,337 @@ export default function App() {
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Patient Choice Modal - Same or Different Patient */}
+      {showPatientChoice && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
+              👤 {t('game.selectPatient')}
+            </h2>
+            <p className="text-gray-600 text-center mb-6">
+              {t('game.lastPatient')}: <span className="font-bold text-blue-600">{participantName}</span>
+            </p>
+            <div className="space-y-3">
+              <Button
+                onClick={handleSamePatient}
+                size="lg"
+                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-6 text-lg"
+              >
+                ✅ {t('game.samePatient')} ({participantName})
+              </Button>
+              <Button
+                onClick={handleDifferentPatient}
+                variant="outline"
+                size="lg"
+                className="w-full border-2 border-blue-500 text-blue-600 hover:bg-blue-50 font-bold py-6 text-lg"
+              >
+                ➕ {t('game.differentPatient')}
+              </Button>
+              <Button
+                onClick={() => setShowPatientChoice(false)}
+                variant="ghost"
+                size="lg"
+                className="w-full text-gray-500 hover:text-gray-700"
+              >
+                {t('game.cancel')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Name Input Modal */}
+      {showNameInput && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">
+              👤 {t('game.enterName')}
+            </h2>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const nameInput = e.currentTarget.querySelector('input[name="name"]') as HTMLInputElement;
+              const ageInput = e.currentTarget.querySelector('input[name="age"]') as HTMLInputElement;
+              const age = ageInput.value ? parseInt(ageInput.value, 10) : null;
+              handleNameSubmit(nameInput.value, age);
+            }}>
+              <input
+                type="text"
+                name="name"
+                autoFocus
+                placeholder={t('game.namePlaceholder')}
+                className="w-full p-4 text-lg border-2 border-gray-300 rounded-xl mb-4 focus:border-blue-500 focus:outline-none"
+              />
+              <input
+                type="number"
+                name="age"
+                min="1"
+                max="120"
+                placeholder={t('game.agePlaceholder')}
+                className="w-full p-4 text-lg border-2 border-gray-300 rounded-xl mb-4 focus:border-blue-500 focus:outline-none"
+              />
+              <p className="text-sm text-gray-500 mb-4 text-center">
+                💡 {t('game.ageHint')}
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  className="flex-1 border-2"
+                  onClick={() => setShowNameInput(false)}
+                >
+                  {t('game.cancel')}
+                </Button>
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold"
+                >
+                  {t('game.continue')}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Difficulty Selector Modal */}
+      {showDifficultySelector && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
+              🎯 {t('game.selectDifficulty')}
+            </h2>
+            {participantAge ? (
+              <p className="text-gray-600 text-center mb-4">
+                👤 {participantName}, {participantAge} {t('game.yearsOld')}
+              </p>
+            ) : (
+              <p className="text-gray-500 text-center mb-4 text-sm">
+                {t('game.chooseDifficulty')}
+              </p>
+            )}
+            <div className="space-y-3">
+              <Button
+                onClick={() => handleDifficultySelect('easy')}
+                size="lg"
+                className={`w-full py-6 text-lg font-bold transition-all relative ${
+                  difficulty === 'easy' 
+                    ? 'bg-green-600 hover:bg-green-700 text-white ring-4 ring-green-300' 
+                    : 'bg-green-100 hover:bg-green-200 text-green-800 border-2 border-green-300'
+                }`}
+              >
+                {participantAge && getSuggestedDifficulty(participantAge) === 'easy' && (
+                  <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                    ⭐ {t('game.recommended')}
+                  </span>
+                )}
+                <span className="text-2xl mr-2">🟢</span>
+                {t('game.difficultyEasy')}
+                <span className="block text-sm font-normal mt-1 opacity-80">
+                  {t('game.easySounds')}
+                </span>
+              </Button>
+              <Button
+                onClick={() => handleDifficultySelect('medium')}
+                size="lg"
+                className={`w-full py-6 text-lg font-bold transition-all relative ${
+                  difficulty === 'medium' 
+                    ? 'bg-yellow-500 hover:bg-yellow-600 text-white ring-4 ring-yellow-300' 
+                    : 'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 border-2 border-yellow-300'
+                }`}
+              >
+                {participantAge && getSuggestedDifficulty(participantAge) === 'medium' && (
+                  <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                    ⭐ {t('game.recommended')}
+                  </span>
+                )}
+                <span className="text-2xl mr-2">🟡</span>
+                {t('game.difficultyMedium')}
+                <span className="block text-sm font-normal mt-1 opacity-80">
+                  {t('game.mediumSounds')}
+                </span>
+              </Button>
+              <Button
+                onClick={() => handleDifficultySelect('hard')}
+                size="lg"
+                className={`w-full py-6 text-lg font-bold transition-all relative ${
+                  difficulty === 'hard' 
+                    ? 'bg-red-600 hover:bg-red-700 text-white ring-4 ring-red-300' 
+                    : 'bg-red-100 hover:bg-red-200 text-red-800 border-2 border-red-300'
+                }`}
+              >
+                {participantAge && getSuggestedDifficulty(participantAge) === 'hard' && (
+                  <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                    ⭐ {t('game.recommended')}
+                  </span>
+                )}
+                <span className="text-2xl mr-2">🔴</span>
+                {t('game.difficultyHard')}
+                <span className="block text-sm font-normal mt-1 opacity-80">
+                  {t('game.hardSounds')}
+                </span>
+              </Button>
+            </div>
+            <Button
+              onClick={() => setShowDifficultySelector(false)}
+              variant="ghost"
+              size="lg"
+              className="w-full mt-4 text-gray-500 hover:text-gray-700"
+            >
+              {t('game.cancel')}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* View All Sessions Modal */}
+      {showAllSessions && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-3xl shadow-2xl max-h-[90vh] flex flex-col">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4 text-center">
+              📊 {t('game.allSessions')}
+            </h2>
+            
+            {/* Search Box */}
+            <div className="mb-4">
+              <input
+                type="text"
+                value={patientSearchText}
+                onChange={(e) => {
+                  setPatientSearchText(e.target.value);
+                  setSelectedPatientFilter(null); // Clear button selection when typing
+                }}
+                placeholder={`🔍 ${t('game.filterByPatient')}...`}
+                className="w-full px-4 py-3 text-lg border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+            
+            {/* Patient Filter Buttons */}
+            {dataManager.current.getParticipantNames().length > 0 && (
+              <div className="mb-4">
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    onClick={() => { setSelectedPatientFilter(null); setPatientSearchText(''); }}
+                    variant={selectedPatientFilter === null && patientSearchText === '' ? "default" : "outline"}
+                    size="sm"
+                    className={`${selectedPatientFilter === null && patientSearchText === '' ? 'bg-blue-600 text-white' : 'border-2'}`}
+                  >
+                    👥 {t('game.allPatients')}
+                  </Button>
+                  {dataManager.current.getParticipantNames()
+                    .filter(name => patientSearchText === '' || name.toLowerCase().includes(patientSearchText.toLowerCase()))
+                    .map((name) => (
+                    <Button
+                      key={name}
+                      onClick={() => { setSelectedPatientFilter(name); setPatientSearchText(''); }}
+                      variant={selectedPatientFilter === name ? "default" : "outline"}
+                      size="sm"
+                      className={`${selectedPatientFilter === name ? 'bg-green-600 text-white' : 'border-2 border-green-300 text-green-700 hover:bg-green-50'}`}
+                    >
+                      👤 {name}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <div className="flex-1 overflow-y-auto space-y-2 mb-4">
+              {(() => {
+                const allSessions = dataManager.current.getAllSessionsSorted();
+                // Filter by button selection OR by search text
+                const filteredSessions = selectedPatientFilter 
+                  ? allSessions.filter(s => s.participantName === selectedPatientFilter)
+                  : patientSearchText
+                    ? allSessions.filter(s => s.participantName?.toLowerCase().includes(patientSearchText.toLowerCase()))
+                    : allSessions;
+                
+                if (filteredSessions.length === 0) {
+                  return <p className="text-center text-gray-500 py-8">{t('game.noSessions')}</p>;
+                }
+                
+                return filteredSessions.map((session) => (
+                  <div 
+                    key={session.id}
+                    className={`p-3 rounded-xl border-2 ${
+                      session.accuracy >= 60 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                    }`}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="font-bold text-gray-800">
+                          {session.participantName || 'Anonymous'}
+                        </span>
+                        <span className="text-sm text-gray-500 ml-2">
+                          (#{session.attemptNumber || 1})
+                        </span>
+                      </div>
+                      <span className={`font-bold ${session.accuracy >= 60 ? 'text-green-700' : 'text-red-700'}`}>
+                        {session.accuracy.toFixed(0)}%
+                      </span>
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      📅 {new Date(session.timestamp).toLocaleDateString()} {new Date(session.timestamp).toLocaleTimeString()}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      ⏱️ {(session.reactionTime / 1000).toFixed(1)}s • 🎯 Session #{session.gameNumber}
+                    </div>
+                  </div>
+                ));
+              })()}
+            </div>
+            <Button
+              onClick={() => {
+                setShowAllSessions(false);
+                setSelectedPatientFilter(null);
+                setPatientSearchText('');
+              }}
+              size="lg"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold"
+            >
+              {t('game.close')}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Clear All Sessions Confirmation Modal */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl text-center">
+            <div className="text-6xl mb-4">⚠️</div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              {t('game.clearAllSessions')}
+            </h2>
+            <p className="text-gray-600 mb-6 text-lg">
+              {t('game.clearConfirm')}
+            </p>
+            <div className="flex gap-4">
+              <Button
+                onClick={() => setShowClearConfirm(false)}
+                variant="outline"
+                size="lg"
+                className="flex-1 border-2 border-gray-300 text-gray-700 font-semibold"
+              >
+                {t('game.cancel')}
+              </Button>
+              <Button
+                onClick={() => {
+                  dataManager.current.clearAllData();
+                  setSessionNumber(1);
+                  setShowClearConfirm(false);
+                  window.location.reload();
+                }}
+                size="lg"
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold"
+              >
+                🗑️ {t('game.clearAllSessions')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

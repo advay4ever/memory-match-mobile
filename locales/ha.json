@@ -43,6 +43,37 @@
     "feedbackCorrectAnswers": "Amsoshin Daidai:",
     "feedbackNextButton": "Zuwa Zama na Gaba",
     "feedbackRetryButton": "Sake Gwada Wannan Zama",
+    "clearAllSessions": "Share duk zaman",
+    "clearConfirm": "Kana tabbata kana so ka share duk zaman? Ba za a iya mayar da wannan ba.",
+    "enterName": "Shigar da sunan mai shiga",
+    "namePlaceholder": "Sunan mai shiga",
+    "agePlaceholder": "Shekaru (zaɓi)",
+    "ageHint": "Shekaru suna taimaka wajen ba da shawarar matakin wahala daidai",
+    "cancel": "Soke",
+    "continue": "Ci gaba",
+    "selectPatient": "Zaɓi Mara Lafiya",
+    "lastPatient": "Marar lafiya na ƙarshe",
+    "samePatient": "Wannan Mara Lafiya",
+    "differentPatient": "Wani Mara Lafiya",
+    "viewAllSessions": "Duba duk zaman",
+    "allSessions": "Duk Zaman",
+    "noSessions": "Babu wani zama da aka yi rikodin har yanzu",
+    "filterByPatient": "Nemo Mara Lafiya",
+    "allPatients": "Duk Marasa Lafiya",
+    "close": "Rufe",
+    "instruction1Dynamic": "Saurari sautuka {{count}} daban-daban",
+    "instruction3Dynamic": "Danna sautuka {{count}} da kuka ji",
+    "selectDifficulty": "Zaɓi Wahala",
+    "chooseDifficulty": "Zaɓi matakin wahala",
+    "recommended": "An ba da shawara",
+    "suggestedFor": "An ba da shawara don shekaru",
+    "yearsOld": "shekaru",
+    "difficultyEasy": "Sauƙi",
+    "difficultyMedium": "Matsakaici",
+    "difficultyHard": "Wuya",
+    "easySounds": "Tuna sautuka 3",
+    "mediumSounds": "Tuna sautuka 4",
+    "hardSounds": "Tuna sautuka 6",
     "sounds": {
       "dogBark": "Hauren Kare 🐕",
       "bellRing": "Kararrawar Kararrawa 🔔",
@@ -60,7 +91,12 @@
       "fireCrackling": "Hayakin Wuta",
       "rooster": "Kiran Zakara"
     },
-    "clearAllSessions": "Share duk zaman"
+    "confidence": {
+      "normal": "Aiki na Yau da Kullum",
+      "monitor": "Kula Sosai",
+      "concern": "Yana Buƙatar Kulawa"
+    },
+    "forAge": "ga shekaru {{age}}"
   },
   "common": {
     "home": "Gida"

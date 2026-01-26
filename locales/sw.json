@@ -43,6 +43,37 @@
     "feedbackCorrectAnswers": "Majibu Sahihi:",
     "feedbackNextButton": "Kwenda Kikao Kifuatacho",
     "feedbackRetryButton": "Jaribu Kikao Hiki Tena",
+    "clearAllSessions": "Futa vikao vyote",
+    "clearConfirm": "Una uhakika unataka kufuta vikao vyote? Hii haiwezi kutenduliwa.",
+    "enterName": "Ingiza jina la mshiriki",
+    "namePlaceholder": "Jina la mshiriki",
+    "agePlaceholder": "Umri (hiari)",
+    "ageHint": "Umri husaidia kupendekeza kiwango sahihi cha ugumu",
+    "cancel": "Ghairi",
+    "continue": "Endelea",
+    "selectPatient": "Chagua Mgonjwa",
+    "lastPatient": "Mgonjwa wa mwisho",
+    "samePatient": "Mgonjwa Huyu Huyu",
+    "differentPatient": "Mgonjwa Tofauti",
+    "viewAllSessions": "Tazama vikao vyote",
+    "allSessions": "Vikao Vyote",
+    "noSessions": "Hakuna vikao vilivyorekodiwa bado",
+    "filterByPatient": "Tafuta Mgonjwa",
+    "allPatients": "Wagonjwa Wote",
+    "close": "Funga",
+    "instruction1Dynamic": "Sikiliza sauti {{count}} tofauti",
+    "instruction3Dynamic": "Gusa sauti {{count}} ulizosikia",
+    "selectDifficulty": "Chagua Ugumu",
+    "chooseDifficulty": "Chagua kiwango cha ugumu",
+    "recommended": "Ilipendekezwa",
+    "suggestedFor": "Ilipendekezwa kwa umri",
+    "yearsOld": "miaka",
+    "difficultyEasy": "Rahisi",
+    "difficultyMedium": "Wastani",
+    "difficultyHard": "Ngumu",
+    "easySounds": "Kumbuka sauti 3",
+    "mediumSounds": "Kumbuka sauti 4",
+    "hardSounds": "Kumbuka sauti 6",
     "sounds": {
       "dogBark": "Mbwa Kubweka 🐕",
       "bellRing": "Kengele Kulia 🔔",
@@ -60,7 +91,12 @@
       "fireCrackling": "Moto unavyopasuka",
       "rooster": "Jogoo awika"
     },
-    "clearAllSessions": "Futa vikao vyote"
+    "confidence": {
+      "normal": "Utendaji wa Kawaida",
+      "monitor": "Fuatilia kwa Karibu",
+      "concern": "Inahitaji Umakini"
+    },
+    "forAge": "kwa umri wa miaka {{age}}"
   },
   "common": {
     "home": "Nyumbani"

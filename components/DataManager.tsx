@@ -1,12 +1,16 @@
 export interface SessionData {
   id: string;
   timestamp: Date;
+  participantName: string; // Name of the person taking the test
+  attemptNumber: number; // Which attempt this is for this participant
   accuracy: number; // percentage (0-100)
   reactionTime: number; // milliseconds
   correctSounds: string[];
   selectedSounds: string[];
   gameNumber: number;
   isCorrect: boolean;
+  difficulty?: 'easy' | 'medium' | 'hard'; // Difficulty level
+  participantAge?: number | null; // Age of participant
 }
 
 export interface UserProfile {
@@ -52,6 +56,36 @@ export class DataManager {
   getRecentSessions(count: number = 3): SessionData[] {
     const sessions = this.getAllSessions();
     return sessions.slice(-count);
+  }
+
+  // Get all sessions sorted by date (newest first)
+  getAllSessionsSorted(): SessionData[] {
+    const sessions = this.getAllSessions();
+    return sessions.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  }
+
+  // Get the next attempt number for a participant
+  getNextAttemptNumber(participantName: string): number {
+    const sessions = this.getAllSessions();
+    const participantSessions = sessions.filter(
+      s => s.participantName?.toLowerCase() === participantName.toLowerCase()
+    );
+    return participantSessions.length + 1;
+  }
+
+  // Get sessions for a specific participant
+  getSessionsByParticipant(participantName: string): SessionData[] {
+    const sessions = this.getAllSessions();
+    return sessions
+      .filter(s => s.participantName?.toLowerCase() === participantName.toLowerCase())
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  }
+
+  // Get unique participant names
+  getParticipantNames(): string[] {
+    const sessions = this.getAllSessions();
+    const names = new Set(sessions.map(s => s.participantName).filter(Boolean));
+    return Array.from(names).sort();
   }
 
   checkAlertConditions(): boolean {

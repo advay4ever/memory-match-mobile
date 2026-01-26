@@ -43,6 +43,37 @@
     "feedbackCorrectAnswers": "Àwọn Ìdáhùn Tó Tọ́:",
     "feedbackNextButton": "Lọ Sí Ìpàdé Tó Kàn",
     "feedbackRetryButton": "Gbìyànjú Ìpàdé Yìí Lẹ́ẹ̀kan Síi",
+    "clearAllSessions": "Pa gbogbo awọn apejọ rẹ",
+    "clearConfirm": "Ṣe o dá ọ lójú pé o fẹ́ pa gbogbo àwọn ìpàdé rẹ̀? Èyí kò lè ṣe àtúnṣe.",
+    "enterName": "Tẹ orúkọ olùkópa sínú",
+    "namePlaceholder": "Orúkọ olùkópa",
+    "agePlaceholder": "Ọjọ́ orí (àṣàyàn)",
+    "ageHint": "Ọjọ́ orí ń ṣèrànwọ́ láti dábàá ìpele àṣepè tó tọ́",
+    "cancel": "Fagilé",
+    "continue": "Tẹ̀síwájú",
+    "selectPatient": "Yan Aláìsàn",
+    "lastPatient": "Aláìsàn tó kẹ́yìn",
+    "samePatient": "Aláìsàn Kan Náà",
+    "differentPatient": "Aláìsàn Mìíràn",
+    "viewAllSessions": "Wo gbogbo àwọn ìpàdé",
+    "allSessions": "Gbogbo Àwọn Ìpàdé",
+    "noSessions": "Kò sí ìpàdé tí a ti gbasilẹ̀ sibẹ̀",
+    "filterByPatient": "Wá Aláìsàn",
+    "allPatients": "Gbogbo Àwọn Aláìsàn",
+    "close": "Pa ká",
+    "instruction1Dynamic": "Gbọ́ àwọn ohùn {{count}} tó yàtọ̀",
+    "instruction3Dynamic": "Tẹ àwọn ohùn {{count}} tí o gbọ́",
+    "selectDifficulty": "Yan Ìṣòro",
+    "chooseDifficulty": "Yan ìpele ìṣòro kan",
+    "recommended": "A ṣe ìmọ̀ràn",
+    "suggestedFor": "Dábàá fún ọjọ́ orí",
+    "yearsOld": "ọdún",
+    "difficultyEasy": "Rọrùn",
+    "difficultyMedium": "Àárín",
+    "difficultyHard": "Ṣòro",
+    "easySounds": "Rántí àwọn ohùn 3",
+    "mediumSounds": "Rántí àwọn ohùn 4",
+    "hardSounds": "Rántí àwọn ohùn 6",
     "sounds": {
       "dogBark": "Gbígbó Ajá 🐕",
       "bellRing": "Dídùn Agogo 🔔",
@@ -60,7 +91,12 @@
       "fireCrackling": "Ìró iná",
       "rooster": "Akọ rẹ kọ"
     },
-    "clearAllSessions": "Pa gbogbo awọn apejọ rẹ"
+    "confidence": {
+      "normal": "Àṣeyọrí Dédé",
+      "monitor": "Ṣọ́ Ní Sísọ̀",
+      "concern": "Nílò Ìfọkànsí"
+    },
+    "forAge": "fún ọjọ́ orí {{age}}"
   },
   "common": {
     "home": "Ile"

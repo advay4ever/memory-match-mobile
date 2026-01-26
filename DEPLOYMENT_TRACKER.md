@@ -52,7 +52,7 @@ Use this file to track launch tasks for rural health workers. Click checkboxes i
 ---
 
 ## �🔴 Critical (Blockers) — Must before pilot
-- [ ] Verify translations exist and are complete for all 15 languages (owner: ) — ETA:
+- [x] Verify translations exist and are complete for all 15 languages (owner: ) — ETA:
 - [ ] Implement PWA offline support (service worker, cache assets, IndexedDB) (owner: ) — ETA:
 - [ ] Persist assessment results locally and add export (CSV/PDF) (owner: ) — ETA:
 - [ ] Test on cheap Android phone (Android 8/9, 1-2GB RAM) and fix issues (owner: ) — ETA:
