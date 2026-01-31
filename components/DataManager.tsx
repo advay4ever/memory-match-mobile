@@ -9,8 +9,9 @@ export interface SessionData {
   selectedSounds: string[];
   gameNumber: number;
   isCorrect: boolean;
-  difficulty?: 'easy' | 'medium' | 'hard'; // Difficulty level
+  difficulty?: 'veryeasy' | 'easy' | 'medium' | 'hard' | 'veryhard' | 'expert'; // Difficulty level
   participantAge?: number | null; // Age of participant
+  mode?: 'manual' | 'adaptive'; // Testing mode used
 }
 
 export interface UserProfile {

@@ -11,38 +11,53 @@ import { useTranslation } from 'react-i18next';
 
 type GamePhase = 'setup' | 'instructions' | 'listen' | 'delay' | 'selection' | 'feedback' | 'results';
 type UserRole = 'operator' | 'patient';
-type DifficultyLevel = 'easy' | 'medium' | 'hard';
+type DifficultyLevel = 'veryeasy' | 'easy' | 'medium' | 'hard' | 'veryhard' | 'expert';
 type ConfidenceLevel = 'normal' | 'monitor' | 'concern';
 
 // Difficulty configuration: sounds to remember and distractors
 const DIFFICULTY_CONFIG = {
+  veryeasy: { soundsToRemember: 2, distractors: 3, totalDisplay: 5 },
   easy: { soundsToRemember: 3, distractors: 3, totalDisplay: 6 },
   medium: { soundsToRemember: 4, distractors: 4, totalDisplay: 8 },
-  hard: { soundsToRemember: 6, distractors: 6, totalDisplay: 12 }
+  hard: { soundsToRemember: 5, distractors: 5, totalDisplay: 10 },
+  veryhard: { soundsToRemember: 6, distractors: 6, totalDisplay: 12 },
+  expert: { soundsToRemember: 7, distractors: 7, totalDisplay: 14 }
 };
 
 // Age-adjusted scoring thresholds
 // Format: { normal: minForNormal, monitor: minForMonitor } (below monitor = concern)
 const SCORING_THRESHOLDS: Record<string, Record<DifficultyLevel, { normal: number; monitor: number }>> = {
   'child': {      // Under 12
+    veryeasy: { normal: 90, monitor: 70 },
     easy: { normal: 80, monitor: 60 },
     medium: { normal: 70, monitor: 50 },
-    hard: { normal: 60, monitor: 40 }
+    hard: { normal: 60, monitor: 40 },
+    veryhard: { normal: 50, monitor: 30 },
+    expert: { normal: 40, monitor: 25 }
   },
   'adult': {      // 12-49
+    veryeasy: { normal: 95, monitor: 80 },
     easy: { normal: 90, monitor: 70 },
     medium: { normal: 80, monitor: 60 },
-    hard: { normal: 70, monitor: 50 }
+    hard: { normal: 70, monitor: 50 },
+    veryhard: { normal: 60, monitor: 40 },
+    expert: { normal: 50, monitor: 35 }
   },
   'older': {      // 50-64
+    veryeasy: { normal: 90, monitor: 75 },
     easy: { normal: 85, monitor: 65 },
     medium: { normal: 75, monitor: 55 },
-    hard: { normal: 65, monitor: 45 }
+    hard: { normal: 65, monitor: 45 },
+    veryhard: { normal: 55, monitor: 35 },
+    expert: { normal: 45, monitor: 30 }
   },
   'senior': {     // 65+
+    veryeasy: { normal: 85, monitor: 65 },
     easy: { normal: 75, monitor: 55 },
     medium: { normal: 65, monitor: 45 },
-    hard: { normal: 55, monitor: 35 }
+    hard: { normal: 55, monitor: 35 },
+    veryhard: { normal: 45, monitor: 25 },
+    expert: { normal: 35, monitor: 20 }
   }
 };
 
@@ -82,7 +97,7 @@ interface Sound {
   name: string;
   icon: string;
   description: string;
-  soundType: 'dog' | 'bell' | 'water' | 'bird' | 'horn' | 'phone' | 'cat' | 'thunder' | 'cow' | 'clock' | 'door' | 'clap' | 'baby' | 'fire' | 'rooster';
+  soundType: 'dog' | 'bell' | 'water' | 'bird' | 'horn' | 'phone' | 'cat' | 'thunder' | 'cow' | 'clock' | 'door' | 'clap' | 'baby' | 'fire' | 'rooster' | 'horse' | 'frog' | 'rain' | 'goat' | 'duck' | 'bee' | 'hen' | 'cricket' | 'donkey' | 'owl';
 }
 
 export default function App() {
@@ -105,6 +120,16 @@ export default function App() {
     { id: 13, name: t('game.sounds.babyCry'), icon: '👶', description: 'Wah wah', soundType: 'baby' },
     { id: 14, name: t('game.sounds.fireCrackling'), icon: '🔥', description: 'Crackle', soundType: 'fire' },
     { id: 15, name: t('game.sounds.rooster'), icon: '🐓', description: 'Cock-a-doodle', soundType: 'rooster' },
+    { id: 16, name: t('game.sounds.horseNeigh'), icon: '🐎', description: 'Neigh neigh', soundType: 'horse' },
+    { id: 17, name: t('game.sounds.frogCroak'), icon: '🐸', description: 'Ribbit ribbit', soundType: 'frog' },
+    { id: 18, name: t('game.sounds.rainFall'), icon: '🌧️', description: 'Pitter patter', soundType: 'rain' },
+    { id: 19, name: t('game.sounds.goatBleat'), icon: '🐐', description: 'Meh meh', soundType: 'goat' },
+    { id: 20, name: t('game.sounds.duckQuack'), icon: '🦆', description: 'Quack quack', soundType: 'duck' },
+    { id: 21, name: t('game.sounds.beeBuzz'), icon: '🐝', description: 'Buzz buzz', soundType: 'bee' },
+    { id: 22, name: t('game.sounds.henCluck'), icon: '🐔', description: 'Cluck cluck', soundType: 'hen' },
+    { id: 23, name: t('game.sounds.cricketChirp'), icon: '🦗', description: 'Chirp chirp', soundType: 'cricket' },
+    { id: 24, name: t('game.sounds.donkeyBray'), icon: '🫏', description: 'Hee-haw', soundType: 'donkey' },
+    { id: 25, name: t('game.sounds.owlHoot'), icon: '🦉', description: 'Hoot hoot', soundType: 'owl' },
   ], [t, i18n.language]);
   
   const [showLanding, setShowLanding] = useState(true);
@@ -128,10 +153,17 @@ export default function App() {
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [selectedPatientFilter, setSelectedPatientFilter] = useState<string | null>(null);
   const [patientSearchText, setPatientSearchText] = useState('');
+  const [expandedAdaptiveSessions, setExpandedAdaptiveSessions] = useState<Set<number>>(new Set());
   const [attemptNumber, setAttemptNumber] = useState(1);
   const [participantAge, setParticipantAge] = useState<number | null>(null);
-  const [difficulty, setDifficulty] = useState<DifficultyLevel>('medium');
+  const [difficulty, setDifficulty] = useState<DifficultyLevel>('easy'); // Start with easy when adaptive is on
   const [showDifficultySelector, setShowDifficultySelector] = useState(false);
+  const [adaptiveDifficultyEnabled, setAdaptiveDifficultyEnabled] = useState(() => {
+    const saved = localStorage.getItem('adaptiveDifficultyEnabled');
+    return saved ? JSON.parse(saved) : true; // Default to enabled
+  });
+  const [difficultyIncreased, setDifficultyIncreased] = useState<{ from: DifficultyLevel; to: DifficultyLevel } | null>(null);
+  const [maxLevelReached, setMaxLevelReached] = useState(false);
   
   const dataManager = useRef(DataManager.getInstance());
   
@@ -350,14 +382,104 @@ export default function App() {
     return audio;
   }, []);
 
+  // Preload horse neigh audio
+  const horseNeighAudio = useMemo(() => {
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/the-horse-neighed-433882.mp3`);
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    audio.load();
+    return audio;
+  }, []);
+
+  // Preload frog croak audio
+  const frogCroakAudio = useMemo(() => {
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/frog-croaking-sound-effect-322956 (1)-[AudioTrimmer.com].mp3`);
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    audio.load();
+    return audio;
+  }, []);
+
+  // Preload rain audio
+  const rainFallAudio = useMemo(() => {
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/rain-sound-no-copyright-346776-[AudioTrimmer.com].mp3`);
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    audio.load();
+    return audio;
+  }, []);
+
+  // Preload goat bleat audio
+  const goatBleatAudio = useMemo(() => {
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/goat-baa-390303.mp3`);
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    audio.load();
+    return audio;
+  }, []);
+
+  // Preload duck quack audio
+  const duckQuackAudio = useMemo(() => {
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/quacking-sound-for-duck-96140.mp3`);
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    audio.load();
+    return audio;
+  }, []);
+
+  // Preload bee buzz audio
+  const beeBuzzAudio = useMemo(() => {
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/bee-buzzing-6254.mp3`);
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    audio.load();
+    return audio;
+  }, []);
+
+  // Preload hen cluck audio
+  const henCluckAudio = useMemo(() => {
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/hen-and-chicks-farm-ambience-suara-induk-ayam-dan-anak-ayam-438586-[AudioTrimmer.com].mp3`);
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    audio.load();
+    return audio;
+  }, []);
+
+  // Preload cricket chirp audio
+  const cricketChirpAudio = useMemo(() => {
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/cricket-sound-113945-[AudioTrimmer.com].mp3`);
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    audio.load();
+    return audio;
+  }, []);
+
+  // Preload donkey bray audio
+  const donkeyBrayAudio = useMemo(() => {
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/donkey-1-352697.mp3`);
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    audio.load();
+    return audio;
+  }, []);
+
+  // Preload owl hoot audio
+  const owlHootAudio = useMemo(() => {
+    const audio = new Audio(`${import.meta.env.BASE_URL}sounds/owl-2-139676.mp3`);
+    audio.preload = 'auto';
+    audio.volume = 0.5;
+    audio.load();
+    return audio;
+  }, []);
+
   // Map of all audio elements for iOS unlock
   const allAudioElements = useMemo(() => [
     dogBarkAudio, carHornAudio, birdChirpAudio, bellRingAudio, waterDropAudio,
     phoneRingAudio, catMeowAudio, thunderAudio, cowMooAudio, clockTickAudio,
-    doorKnockAudio, clappingAudio, babyCryAudio, fireCracklingAudio, roosterAudio
+    doorKnockAudio, clappingAudio, babyCryAudio, fireCracklingAudio, roosterAudio, horseNeighAudio, frogCroakAudio, rainFallAudio, goatBleatAudio, duckQuackAudio, beeBuzzAudio, henCluckAudio, cricketChirpAudio, donkeyBrayAudio, owlHootAudio
   ], [dogBarkAudio, carHornAudio, birdChirpAudio, bellRingAudio, waterDropAudio,
       phoneRingAudio, catMeowAudio, thunderAudio, cowMooAudio, clockTickAudio,
-      doorKnockAudio, clappingAudio, babyCryAudio, fireCracklingAudio, roosterAudio]);
+      doorKnockAudio, clappingAudio, babyCryAudio, fireCracklingAudio, roosterAudio, horseNeighAudio, frogCroakAudio, rainFallAudio, goatBleatAudio, duckQuackAudio, beeBuzzAudio, henCluckAudio, cricketChirpAudio, donkeyBrayAudio, owlHootAudio]);
 
   // Unlock all audio for iOS - must be called on user gesture
   const unlockAudioForIOS = useCallback(() => {
@@ -515,6 +637,96 @@ export default function App() {
     }
   }, [roosterAudio]);
 
+  const createHorseNeigh = useCallback(() => {
+    try {
+      horseNeighAudio.currentTime = 0;
+      horseNeighAudio.play().catch(err => console.error('Error playing horse neigh:', err));
+    } catch (err) {
+      console.error('Error creating horse neigh audio:', err);
+    }
+  }, [horseNeighAudio]);
+
+  const createFrogCroak = useCallback(() => {
+    try {
+      frogCroakAudio.currentTime = 0;
+      frogCroakAudio.play().catch(err => console.error('Error playing frog croak:', err));
+    } catch (err) {
+      console.error('Error creating frog croak audio:', err);
+    }
+  }, [frogCroakAudio]);
+
+  const createRainFall = useCallback(() => {
+    try {
+      rainFallAudio.currentTime = 0;
+      rainFallAudio.play().catch(err => console.error('Error playing rain fall:', err));
+    } catch (err) {
+      console.error('Error creating rain fall audio:', err);
+    }
+  }, [rainFallAudio]);
+
+  const createGoatBleat = useCallback(() => {
+    try {
+      goatBleatAudio.currentTime = 0;
+      goatBleatAudio.play().catch(err => console.error('Error playing goat bleat:', err));
+    } catch (err) {
+      console.error('Error creating goat bleat audio:', err);
+    }
+  }, [goatBleatAudio]);
+
+  const createDuckQuack = useCallback(() => {
+    try {
+      duckQuackAudio.currentTime = 0;
+      duckQuackAudio.play().catch(err => console.error('Error playing duck quack:', err));
+    } catch (err) {
+      console.error('Error creating duck quack audio:', err);
+    }
+  }, [duckQuackAudio]);
+
+  const createBeeBuzz = useCallback(() => {
+    try {
+      beeBuzzAudio.currentTime = 0;
+      beeBuzzAudio.play().catch(err => console.error('Error playing bee buzz:', err));
+    } catch (err) {
+      console.error('Error creating bee buzz audio:', err);
+    }
+  }, [beeBuzzAudio]);
+
+  const createHenCluck = useCallback(() => {
+    try {
+      henCluckAudio.currentTime = 0;
+      henCluckAudio.play().catch(err => console.error('Error playing hen cluck:', err));
+    } catch (err) {
+      console.error('Error creating hen cluck audio:', err);
+    }
+  }, [henCluckAudio]);
+
+  const createCricketChirp = useCallback(() => {
+    try {
+      cricketChirpAudio.currentTime = 0;
+      cricketChirpAudio.play().catch(err => console.error('Error playing cricket chirp:', err));
+    } catch (err) {
+      console.error('Error creating cricket chirp audio:', err);
+    }
+  }, [cricketChirpAudio]);
+
+  const createDonkeyBray = useCallback(() => {
+    try {
+      donkeyBrayAudio.currentTime = 0;
+      donkeyBrayAudio.play().catch(err => console.error('Error playing donkey bray:', err));
+    } catch (err) {
+      console.error('Error creating donkey bray audio:', err);
+    }
+  }, [donkeyBrayAudio]);
+
+  const createOwlHoot = useCallback(() => {
+    try {
+      owlHootAudio.currentTime = 0;
+      owlHootAudio.play().catch(err => console.error('Error playing owl hoot:', err));
+    } catch (err) {
+      console.error('Error creating owl hoot audio:', err);
+    }
+  }, [owlHootAudio]);
+
   const playSound = useCallback((soundType: Sound['soundType']) => {
     if (!audioContext) return;
 
@@ -564,8 +776,38 @@ export default function App() {
       case 'rooster':
         createRooster();
         break;
+      case 'horse':
+        createHorseNeigh();
+        break;
+      case 'frog':
+        createFrogCroak();
+        break;
+      case 'rain':
+        createRainFall();
+        break;
+      case 'goat':
+        createGoatBleat();
+        break;
+      case 'duck':
+        createDuckQuack();
+        break;
+      case 'bee':
+        createBeeBuzz();
+        break;
+      case 'hen':
+        createHenCluck();
+        break;
+      case 'cricket':
+        createCricketChirp();
+        break;
+      case 'donkey':
+        createDonkeyBray();
+        break;
+      case 'owl':
+        createOwlHoot();
+        break;
     }
-  }, [audioContext, createDogBark, createBellRing, createWaterDrop, createBirdChirp, createCarHorn, createPhoneRing, createCatMeow, createThunder, createCowMoo, createClockTick, createDoorKnock, createClapping, createBabyCry, createFireCrackling, createRooster]);
+  }, [audioContext, createDogBark, createBellRing, createWaterDrop, createBirdChirp, createCarHorn, createPhoneRing, createCatMeow, createThunder, createCowMoo, createClockTick, createDoorKnock, createClapping, createBabyCry, createFireCrackling, createRooster, createHorseNeigh, createFrogCroak, createRainFall, createGoatBleat, createDuckQuack, createBeeBuzz, createHenCluck, createCricketChirp, createDonkeyBray, createOwlHoot]);
 
   const handleStartTestClick = () => {
     // If we already have a participant name, show the choice dialog
@@ -582,13 +824,25 @@ export default function App() {
     const attempt = dataManager.current.getNextAttemptNumber(participantName);
     setAttemptNumber(attempt);
     setShowPatientChoice(false);
-    // Show difficulty selector instead of starting directly
-    setShowDifficultySelector(true);
+    
+    // Always reset to Very Easy difficulty when starting a new session
+    const startingDifficulty: DifficultyLevel = 'veryeasy';
+    setDifficulty(startingDifficulty);
+    
+    // If adaptive mode is ON, skip difficulty selector and start immediately
+    if (adaptiveDifficultyEnabled) {
+      startGame(startingDifficulty);
+    } else {
+      // Show difficulty selector for manual mode
+      setShowDifficultySelector(true);
+    }
   };
 
   const handleDifferentPatient = () => {
     setShowPatientChoice(false);
     setParticipantAge(null); // Reset age for new patient
+    // Reset difficulty to veryeasy (will be set properly in handleNameSubmit)
+    setDifficulty('veryeasy');
     setShowNameInput(true);
   };
 
@@ -612,10 +866,18 @@ export default function App() {
     const attempt = dataManager.current.getNextAttemptNumber(trimmedName);
     setAttemptNumber(attempt);
     setShowNameInput(false);
-    // Set suggested difficulty based on age
-    setDifficulty(getSuggestedDifficulty(age));
-    // Show difficulty selector
-    setShowDifficultySelector(true);
+    
+    // Always reset to Very Easy difficulty when starting a new session
+    const startingDifficulty: DifficultyLevel = 'veryeasy';
+    setDifficulty(startingDifficulty);
+    
+    // If adaptive mode is ON, skip difficulty selector and start immediately
+    if (adaptiveDifficultyEnabled) {
+      startGame(startingDifficulty);
+    } else {
+      // Show difficulty selector for manual mode
+      setShowDifficultySelector(true);
+    }
   };
 
   const handleDifficultySelect = (level: DifficultyLevel) => {
@@ -749,7 +1011,8 @@ export default function App() {
       gameNumber: sessionNumber,
       isCorrect: isCorrect,
       difficulty: difficulty,
-      participantAge: participantAge
+      participantAge: participantAge,
+      mode: adaptiveDifficultyEnabled ? 'adaptive' : 'manual'
     };
     
     dataManager.current.saveSession(sessionData);
@@ -758,7 +1021,60 @@ export default function App() {
     const needsAlert = dataManager.current.checkAlertConditions();
     setShowAlert(needsAlert);
     
-    setGamePhase('feedback');
+    // Handle adaptive difficulty - Auto-advance on 100%
+    setDifficultyIncreased(null);
+    setMaxLevelReached(false);
+    
+    if (adaptiveDifficultyEnabled && isCorrect) {
+      if (difficulty === 'expert') {
+        // At max level, show results
+        setMaxLevelReached(true);
+        setGamePhase('feedback');
+      } else {
+        // Auto-advance to next difficulty without showing results
+        let nextDifficulty: DifficultyLevel = 'easy';
+        if (difficulty === 'veryeasy') {
+          nextDifficulty = 'easy';
+        } else if (difficulty === 'easy') {
+          nextDifficulty = 'medium';
+        } else if (difficulty === 'medium') {
+          nextDifficulty = 'hard';
+        } else if (difficulty === 'hard') {
+          nextDifficulty = 'veryhard';
+        } else if (difficulty === 'veryhard') {
+          nextDifficulty = 'expert';
+        }
+        
+        setDifficulty(nextDifficulty);
+        
+        // Reset and start next round immediately
+        setSelectedSounds(new Set());
+        setCurrentSoundIndex(0);
+        setGamePhase('listen');
+        
+        // Generate new sequence for the new difficulty
+        setTimeout(() => {
+          const config = DIFFICULTY_CONFIG[nextDifficulty];
+          const shuffled = [...GAME_SOUNDS].sort(() => Math.random() - 0.5);
+          const newSequence = shuffled.slice(0, config.soundsToRemember);
+          
+          // Get distractor sounds (sounds not in newSequence)
+          const selectedIds = new Set(newSequence.map(s => s.id));
+          const distractors = GAME_SOUNDS.filter(s => !selectedIds.has(s.id))
+            .sort(() => Math.random() - 0.5)
+            .slice(0, config.distractors);
+          
+          // Combine and shuffle for display
+          const allDisplaySounds = [...newSequence, ...distractors].sort(() => Math.random() - 0.5);
+          
+          setTargetSounds(newSequence);
+          setDisplaySounds(allDisplaySounds);
+        }, 100);
+      }
+    } else {
+      // Not adaptive or got wrong answer - show results
+      setGamePhase('feedback');
+    }
   };
 
   const calculatePartialAccuracy = (): number => {
@@ -776,6 +1092,14 @@ export default function App() {
     setSelectedSounds(new Set());
     setCurrentSoundIndex(0);
     setShowAlert(false);
+    setDifficultyIncreased(null);
+    setMaxLevelReached(false);
+  };
+
+  const toggleAdaptiveDifficulty = () => {
+    const newValue = !adaptiveDifficultyEnabled;
+    setAdaptiveDifficultyEnabled(newValue);
+    localStorage.setItem('adaptiveDifficultyEnabled', JSON.stringify(newValue));
   };
 
   const handleStartGame = () => {
@@ -966,6 +1290,24 @@ export default function App() {
                   )}
                   
                   <div className="space-y-5">
+                    {/* Adaptive Difficulty Toggle */}
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border-2 border-gray-200">
+                      <div>
+                        <p className="font-bold text-gray-800">📈 {t('game.adaptiveDifficulty')}</p>
+                        <p className="text-sm text-gray-500">{t('game.adaptiveDifficultyHint')}</p>
+                      </div>
+                      <button
+                        onClick={toggleAdaptiveDifficulty}
+                        className={`w-14 h-8 rounded-full transition-colors flex items-center ${
+                          adaptiveDifficultyEnabled ? 'bg-blue-600' : 'bg-gray-300'
+                        }`}
+                      >
+                        <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-transform ${
+                          adaptiveDifficultyEnabled ? 'translate-x-7' : 'translate-x-1'
+                        }`} />
+                      </button>
+                    </div>
+                    
                     <p className="text-lg text-gray-600 text-center font-medium">
                       👨‍⚕️ {t('game.operatorInstruction')}
                     </p>
@@ -1022,11 +1364,15 @@ export default function App() {
                     <Badge className={`text-sm px-3 py-1 ${
                       difficulty === 'easy' ? 'bg-green-100 text-green-800 border-green-300' :
                       difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800 border-yellow-300' :
-                      'bg-red-100 text-red-800 border-red-300'
+                      difficulty === 'hard' ? 'bg-red-100 text-red-800 border-red-300' :
+                      difficulty === 'veryhard' ? 'bg-purple-100 text-purple-800 border-purple-300' :
+                      'bg-indigo-100 text-indigo-800 border-indigo-300'
                     }`}>
                       {difficulty === 'easy' && '🟢'} 
                       {difficulty === 'medium' && '🟡'} 
                       {difficulty === 'hard' && '🔴'} 
+                      {difficulty === 'veryhard' && '🟣'} 
+                      {difficulty === 'expert' && '👑'} 
                       {' '}{t(`game.difficulty${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}`)}
                     </Badge>
                   </div>
@@ -1036,21 +1382,30 @@ export default function App() {
                       <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center shadow-md">
                         <span className="text-lg text-white font-bold">1</span>
                       </div>
-                      <p className="text-gray-800 font-medium">🎵 {t('game.instruction1Dynamic', { count: DIFFICULTY_CONFIG[difficulty].soundsToRemember })}</p>
+                      <p className="text-gray-800 font-medium">
+                        🎵 {t('game.instruction1Dynamic', { count: DIFFICULTY_CONFIG[difficulty].soundsToRemember })}
+                        <span className="text-2xl ml-2">🐕 🔔 💧</span>
+                      </p>
                     </div>
                     
                     <div className="flex items-center space-x-4 bg-green-50 p-4 rounded-xl border-2 border-green-200">
                       <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center shadow-md">
                         <span className="text-lg text-white font-bold">2</span>
                       </div>
-                      <p className="text-gray-800 font-medium">⏳ {t('game.instruction2')}</p>
+                      <p className="text-gray-800 font-medium">
+                        ⏳ {t('game.instruction2')}
+                        <span className="text-sm text-gray-600 ml-1">(8 sec countdown)</span>
+                      </p>
                     </div>
                     
                     <div className="flex items-center space-x-4 bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
                       <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center shadow-md">
                         <span className="text-lg text-white font-bold">3</span>
                       </div>
-                      <p className="text-gray-800 font-medium">👆 {t('game.instruction3Dynamic', { count: DIFFICULTY_CONFIG[difficulty].soundsToRemember })}</p>
+                      <p className="text-gray-800 font-medium">
+                        👆 {t('game.instruction3Dynamic', { count: DIFFICULTY_CONFIG[difficulty].soundsToRemember })}
+                        <span className="text-sm text-blue-600 font-semibold ml-1">(tap = blue)</span>
+                      </p>
                     </div>
                   </div>
                   
@@ -1258,6 +1613,24 @@ export default function App() {
                       );
                     })()}
                     
+                    {/* Adaptive Difficulty Notification */}
+                    {difficultyIncreased && (
+                      <div className="p-4 bg-purple-50 border-2 border-purple-200 rounded-xl">
+                        <p className="font-bold text-purple-800 text-lg">📈 {t('game.difficultyIncreased')}</p>
+                        <p className="text-purple-600">
+                          {t(`game.difficulty${difficultyIncreased.from.charAt(0).toUpperCase() + difficultyIncreased.from.slice(1)}`)} → {t(`game.difficulty${difficultyIncreased.to.charAt(0).toUpperCase() + difficultyIncreased.to.slice(1)}`)}
+                        </p>
+                        <p className="text-sm text-gray-500 mt-1">{t('game.nextTestHigherDifficulty')}</p>
+                      </div>
+                    )}
+                    
+                    {maxLevelReached && (
+                      <div className="p-4 bg-amber-50 border-2 border-amber-200 rounded-xl">
+                        <p className="font-bold text-amber-800 text-lg">🏆 {t('game.maxLevelReached')}</p>
+                        <p className="text-sm text-amber-600">{t('game.maxLevelHint')}</p>
+                      </div>
+                    )}
+                    
                     <div className="text-sm text-gray-700 bg-blue-50 p-4 rounded-xl border-2 border-blue-200">
                       <p className="mb-2 font-bold text-base">
                         ✅ {t('game.correct')} <span className="text-2xl">{targetSounds.map(s => s.icon).join(' ')}</span>
@@ -1282,6 +1655,22 @@ export default function App() {
                       )}
                     </div>
                   </div>
+                  
+                  {/* Retry Button - Only show in adaptive mode when answer is wrong */}
+                  {adaptiveDifficultyEnabled && !isCorrect && (
+                    <Button 
+                      onClick={() => {
+                        // Reset game to current difficulty level
+                        setSelectedSounds(new Set());
+                        setCurrentSoundIndex(0);
+                        setGamePhase('instructions');
+                      }}
+                      size="lg"
+                      className="w-full mb-3 bg-orange-600 hover:bg-orange-700 text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all"
+                    >
+                      🔄 {t('game.retry')}
+                    </Button>
+                  )}
                   
                   <Button 
                     onClick={resetToOperator}
@@ -1410,19 +1799,25 @@ export default function App() {
             )}
             <div className="space-y-3">
               <Button
+                onClick={() => handleDifficultySelect('veryeasy')}
+                size="lg"
+                className="w-full py-6 text-lg font-bold transition-all bg-blue-100 hover:bg-blue-200 text-blue-800 border-2 border-blue-300"
+              >
+                <span className="text-2xl mr-2">⭐</span>
+                {t('game.difficultyVeryeasy')}
+                <span className="block text-sm font-normal mt-1 opacity-80">
+                  {t('game.veryeasySounds')}
+                </span>
+              </Button>
+              <Button
                 onClick={() => handleDifficultySelect('easy')}
                 size="lg"
-                className={`w-full py-6 text-lg font-bold transition-all relative ${
+                className={`w-full py-6 text-lg font-bold transition-all ${
                   difficulty === 'easy' 
                     ? 'bg-green-600 hover:bg-green-700 text-white ring-4 ring-green-300' 
                     : 'bg-green-100 hover:bg-green-200 text-green-800 border-2 border-green-300'
                 }`}
               >
-                {participantAge && getSuggestedDifficulty(participantAge) === 'easy' && (
-                  <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
-                    ⭐ {t('game.recommended')}
-                  </span>
-                )}
                 <span className="text-2xl mr-2">🟢</span>
                 {t('game.difficultyEasy')}
                 <span className="block text-sm font-normal mt-1 opacity-80">
@@ -1432,17 +1827,12 @@ export default function App() {
               <Button
                 onClick={() => handleDifficultySelect('medium')}
                 size="lg"
-                className={`w-full py-6 text-lg font-bold transition-all relative ${
+                className={`w-full py-6 text-lg font-bold transition-all ${
                   difficulty === 'medium' 
                     ? 'bg-yellow-500 hover:bg-yellow-600 text-white ring-4 ring-yellow-300' 
                     : 'bg-yellow-100 hover:bg-yellow-200 text-yellow-800 border-2 border-yellow-300'
                 }`}
               >
-                {participantAge && getSuggestedDifficulty(participantAge) === 'medium' && (
-                  <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
-                    ⭐ {t('game.recommended')}
-                  </span>
-                )}
                 <span className="text-2xl mr-2">🟡</span>
                 {t('game.difficultyMedium')}
                 <span className="block text-sm font-normal mt-1 opacity-80">
@@ -1452,21 +1842,46 @@ export default function App() {
               <Button
                 onClick={() => handleDifficultySelect('hard')}
                 size="lg"
-                className={`w-full py-6 text-lg font-bold transition-all relative ${
+                className={`w-full py-6 text-lg font-bold transition-all ${
                   difficulty === 'hard' 
                     ? 'bg-red-600 hover:bg-red-700 text-white ring-4 ring-red-300' 
                     : 'bg-red-100 hover:bg-red-200 text-red-800 border-2 border-red-300'
                 }`}
               >
-                {participantAge && getSuggestedDifficulty(participantAge) === 'hard' && (
-                  <span className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
-                    ⭐ {t('game.recommended')}
-                  </span>
-                )}
                 <span className="text-2xl mr-2">🔴</span>
                 {t('game.difficultyHard')}
                 <span className="block text-sm font-normal mt-1 opacity-80">
                   {t('game.hardSounds')}
+                </span>
+              </Button>
+              <Button
+                onClick={() => handleDifficultySelect('veryhard')}
+                size="lg"
+                className={`w-full py-6 text-lg font-bold transition-all ${
+                  difficulty === 'veryhard' 
+                    ? 'bg-purple-600 hover:bg-purple-700 text-white ring-4 ring-purple-300' 
+                    : 'bg-purple-100 hover:bg-purple-200 text-purple-800 border-2 border-purple-300'
+                }`}
+              >
+                <span className="text-2xl mr-2">🟣</span>
+                {t('game.difficultyVeryhard')}
+                <span className="block text-sm font-normal mt-1 opacity-80">
+                  {t('game.veryhardSounds')}
+                </span>
+              </Button>
+              <Button
+                onClick={() => handleDifficultySelect('expert')}
+                size="lg"
+                className={`w-full py-6 text-lg font-bold transition-all ${
+                  difficulty === 'expert' 
+                    ? 'bg-indigo-600 hover:bg-indigo-700 text-white ring-4 ring-indigo-300' 
+                    : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-800 border-2 border-indigo-300'
+                }`}
+              >
+                <span className="text-2xl mr-2">👑</span>
+                {t('game.difficultyExpert')}
+                <span className="block text-sm font-normal mt-1 opacity-80">
+                  {t('game.expertSounds')}
                 </span>
               </Button>
             </div>
@@ -1474,7 +1889,7 @@ export default function App() {
               onClick={() => setShowDifficultySelector(false)}
               variant="ghost"
               size="lg"
-              className="w-full mt-4 text-gray-500 hover:text-gray-700"
+              className="w-full mt-4 text-gray-500 hover:text-gray-900 hover:bg-gray-100 active:text-black active:font-bold transition-all"
             >
               {t('game.cancel')}
             </Button>
@@ -1547,34 +1962,159 @@ export default function App() {
                   return <p className="text-center text-gray-500 py-8">{t('game.noSessions')}</p>;
                 }
                 
-                return filteredSessions.map((session) => (
-                  <div 
-                    key={session.id}
-                    className={`p-3 rounded-xl border-2 ${
-                      session.accuracy >= 60 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
-                    }`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <span className="font-bold text-gray-800">
-                          {session.participantName || 'Anonymous'}
-                        </span>
-                        <span className="text-sm text-gray-500 ml-2">
-                          (#{session.attemptNumber || 1})
-                        </span>
+                // Group sessions by gameNumber for adaptive mode
+                const groupedSessions = new Map<number, typeof filteredSessions>();
+                const manualSessions: typeof filteredSessions = [];
+                
+                filteredSessions.forEach(session => {
+                  if (session.mode === 'adaptive') {
+                    const existing = groupedSessions.get(session.gameNumber) || [];
+                    existing.push(session);
+                    groupedSessions.set(session.gameNumber, existing);
+                  } else {
+                    manualSessions.push(session);
+                  }
+                });
+                
+                // Convert to array and sort by first session's timestamp
+                const adaptiveGroups = Array.from(groupedSessions.entries())
+                  .map(([gameNum, sessions]) => ({
+                    gameNumber: gameNum,
+                    sessions: sessions.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()),
+                    firstTimestamp: new Date(sessions[0].timestamp).getTime()
+                  }))
+                  .sort((a, b) => b.firstTimestamp - a.firstTimestamp);
+                
+                // Combine adaptive groups and manual sessions, sorted by timestamp
+                const allItems: { type: 'adaptive' | 'manual', data: typeof filteredSessions[0] | typeof adaptiveGroups[0] }[] = [
+                  ...adaptiveGroups.map(g => ({ type: 'adaptive' as const, data: g })),
+                  ...manualSessions.map(s => ({ type: 'manual' as const, data: s }))
+                ].sort((a, b) => {
+                  const timeA = a.type === 'adaptive' 
+                    ? (a.data as typeof adaptiveGroups[0]).firstTimestamp 
+                    : new Date((a.data as typeof filteredSessions[0]).timestamp).getTime();
+                  const timeB = b.type === 'adaptive' 
+                    ? (b.data as typeof adaptiveGroups[0]).firstTimestamp 
+                    : new Date((b.data as typeof filteredSessions[0]).timestamp).getTime();
+                  return timeB - timeA;
+                });
+                
+                return allItems.map((item, index) => {
+                  if (item.type === 'manual') {
+                    const session = item.data as typeof filteredSessions[0];
+                    return (
+                      <div 
+                        key={session.id}
+                        className={`p-3 rounded-xl border-2 ${
+                          session.accuracy >= 60 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                        }`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <span className="font-bold text-gray-800">
+                              {session.participantName || 'Anonymous'}
+                            </span>
+                            <span className="text-xs ml-2 px-2 py-0.5 bg-gray-200 text-gray-600 rounded-full">
+                              {t('game.manualMode')}
+                            </span>
+                          </div>
+                          <span className={`font-bold ${session.accuracy >= 60 ? 'text-green-700' : 'text-red-700'}`}>
+                            {session.accuracy.toFixed(0)}%
+                          </span>
+                        </div>
+                        <div className="text-sm text-gray-600 mt-1">
+                          📅 {new Date(session.timestamp).toLocaleDateString()} {new Date(session.timestamp).toLocaleTimeString()}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          ⏱️ {(session.reactionTime / 1000).toFixed(1)}s • 🎯 {t(`game.difficulty${(session.difficulty || 'easy').charAt(0).toUpperCase() + (session.difficulty || 'easy').slice(1)}`)}
+                        </div>
                       </div>
-                      <span className={`font-bold ${session.accuracy >= 60 ? 'text-green-700' : 'text-red-700'}`}>
-                        {session.accuracy.toFixed(0)}%
-                      </span>
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      📅 {new Date(session.timestamp).toLocaleDateString()} {new Date(session.timestamp).toLocaleTimeString()}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      ⏱️ {(session.reactionTime / 1000).toFixed(1)}s • 🎯 Session #{session.gameNumber}
-                    </div>
-                  </div>
-                ));
+                    );
+                  } else {
+                    const group = item.data as typeof adaptiveGroups[0];
+                    const isExpanded = expandedAdaptiveSessions.has(group.gameNumber);
+                    const lastSession = group.sessions[group.sessions.length - 1];
+                    const highestDifficulty = group.sessions.reduce((max, s) => {
+                      const order = ['veryeasy', 'easy', 'medium', 'hard', 'veryhard', 'expert'];
+                      return order.indexOf(s.difficulty || 'easy') > order.indexOf(max) ? (s.difficulty || 'easy') : max;
+                    }, 'veryeasy');
+                    const allCorrect = group.sessions.every(s => s.isCorrect);
+                    
+                    return (
+                      <div key={`adaptive-${group.gameNumber}`} className="rounded-xl border-2 border-purple-200 overflow-hidden">
+                        <div 
+                          className={`p-3 cursor-pointer hover:bg-purple-100 transition-colors ${
+                            allCorrect ? 'bg-purple-50' : 'bg-orange-50'
+                          }`}
+                          onClick={() => {
+                            setExpandedAdaptiveSessions(prev => {
+                              const newSet = new Set(prev);
+                              if (newSet.has(group.gameNumber)) {
+                                newSet.delete(group.gameNumber);
+                              } else {
+                                newSet.add(group.gameNumber);
+                              }
+                              return newSet;
+                            });
+                          }}
+                        >
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <span className="font-bold text-gray-800">
+                                {group.sessions[0].participantName || 'Anonymous'}
+                              </span>
+                              <span className="text-xs ml-2 px-2 py-0.5 bg-purple-200 text-purple-700 rounded-full">
+                                {t('game.adaptiveMode')}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-purple-700">
+                                {group.sessions.length} {t('game.rounds')}
+                              </span>
+                              <span className="text-lg">{isExpanded ? '▼' : '▶'}</span>
+                            </div>
+                          </div>
+                          <div className="text-sm text-gray-600 mt-1">
+                            📅 {new Date(group.sessions[0].timestamp).toLocaleDateString()} {new Date(group.sessions[0].timestamp).toLocaleTimeString()}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            🏆 {t('game.reached')}: {t(`game.difficulty${highestDifficulty.charAt(0).toUpperCase() + highestDifficulty.slice(1)}`)}
+                            {!allCorrect && <span className="ml-2 text-orange-600">• {t('game.stoppedAt')} {t(`game.difficulty${(lastSession.difficulty || 'easy').charAt(0).toUpperCase() + (lastSession.difficulty || 'easy').slice(1)}`)}</span>}
+                          </div>
+                        </div>
+                        
+                        {isExpanded && (
+                          <div className="border-t border-purple-200 bg-white p-2 space-y-2">
+                            {group.sessions.map((session, idx) => (
+                              <div 
+                                key={session.id}
+                                className={`p-2 rounded-lg text-sm ${
+                                  session.isCorrect ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
+                                }`}
+                              >
+                                <div className="flex justify-between items-center">
+                                  <span className="font-medium">
+                                    {idx + 1}. {t(`game.difficulty${(session.difficulty || 'easy').charAt(0).toUpperCase() + (session.difficulty || 'easy').slice(1)}`)}
+                                  </span>
+                                  <span className={`font-bold ${session.isCorrect ? 'text-green-600' : 'text-red-600'}`}>
+                                    {session.isCorrect ? '✓ 100%' : `✗ ${session.accuracy.toFixed(0)}%`}
+                                  </span>
+                                </div>
+                                {!session.isCorrect && (
+                                  <div className="text-xs text-gray-600 mt-1">
+                                    {t('game.expected')}: {session.correctSounds?.join(', ')}
+                                    <br/>
+                                    {t('game.selected')}: {session.selectedSounds?.join(', ')}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+                });
               })()}
             </div>
             <Button

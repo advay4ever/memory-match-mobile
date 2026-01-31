@@ -6,6 +6,7 @@ This document outlines the prioritized features for improving the cognitive asse
 
 ---
 
+
 ## ✅ COMPLETED
 
 | # | Feature | Status | Notes |
@@ -13,6 +14,7 @@ This document outlines the prioritized features for improving the cognitive asse
 | 1 | **Difficulty Levels (Easy/Medium/Hard)** | ✅ Done | Easy (3 sounds), Medium (4 sounds), Hard (6 sounds). Age-based recommendations included. |
 | 2 | **Age Input** | ✅ Done | Optional age input during patient registration. Used for difficulty recommendations. |
 | 3 | **Age-Adjusted Scoring + Confidence Display** | ✅ Done | 🟢🟡🔴 indicators based on age group and difficulty. Thresholds for child/adult/older/senior. |
+| 4 | **Adaptive Difficulty (Auto-Advance)** | ✅ Done | **Optional toggle** (default: ON). When enabled: starts at Easy, auto-advances on 100% score WITHOUT showing results until wrong answer or max level reached. Finds true cognitive ceiling efficiently. See `docs/ADAPTIVE_DIFFICULTY.md`. |
 
 ---
 
@@ -22,7 +24,6 @@ These features significantly improve assessment accuracy and reliability.
 
 | # | Feature | Effort | Description |
 |---|---------|--------|-------------|
-| 4 | **Adaptive Difficulty (Streak-Based)** | Medium | Auto-recommend harder level after 5 consecutive 100% scores. Recommend easier after 3 consecutive <50% scores. Finds patient's cognitive ceiling. |
 | 5 | **Per-Patient Alert System** | Low | Trigger "consult doctor" alert based on individual patient's history, not mixed with other patients. |
 | 6 | **Enhanced Results Screen** | Medium | Show additional metrics: error count, first-try success rate, hesitation patterns. More data for better assessment. |
 
@@ -61,10 +62,10 @@ These features enhance user experience but have lower clinical impact.
 1. Difficulty Levels          ███████████ ✓ DONE
 2. Age Input                  ███████████ ✓ DONE
 3. Age-Adjusted Scoring       ███████████ ✓ DONE (includes 🟢🟡🔴)
+4. Adaptive Difficulty        ███████████ ✓ DONE (auto-increase on 100%)
 
 HIGH PRIORITY (Do First)
 ─────────────────────────
-4. Adaptive Difficulty        ███████████ Smart recommendations
 5. Per-Patient Alerts         ██████████░ Individual tracking
 6. Enhanced Results           ██████████░ Insight
 
@@ -86,13 +87,13 @@ LOW PRIORITY (Later)
 
 ## 🚀 Recommended Implementation Phases
 
-### Phase 1: Core Assessment Improvements ✅ PARTIALLY COMPLETE
+### Phase 1: Core Assessment Improvements ✅ NEARLY COMPLETE
 *No backup infrastructure needed*
 
 - [x] Difficulty Levels (Easy/Medium/Hard)
 - [x] Age Input
 - [x] Age-Adjusted Scoring + Confidence Display (🟢🟡🔴)
-- [ ] Adaptive Difficulty (Streak-Based)
+- [x] Adaptive Difficulty (Auto-Increase on 100%, optional toggle)
 - [ ] Per-Patient Alert System
 
 **Outcome:** More accurate and clinically useful assessments
@@ -153,9 +154,10 @@ These priorities are informed by cognitive assessment research:
 - ✅ Difficulty Levels implemented: Easy (3 sounds), Medium (4 sounds), Hard (6 sounds)
 - ✅ Age input implemented with age-based difficulty recommendations
 - ✅ Age-Adjusted Scoring with 🟢🟡🔴 confidence indicators by age group
+- ✅ Adaptive Difficulty implemented: Auto-increases after 100% score (optional toggle)
 - Features should include translations for 15 supported languages (add to en.json first, batch translate later)
 - Mobile-first design for rural healthcare workers using smartphones
 
 ---
 
-*Last updated: January 25, 2026*
+*Last updated: January 26, 2026*
